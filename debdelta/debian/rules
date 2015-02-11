@@ -51,7 +51,7 @@ binary-indep:	checkroot build
 	rm -rf $(D2)
 	install -d $(D2)/DEBIAN  $(docdir2)  $(docdir2doc)
 	cp doc/debdelta_suite.pdf debian/copyright debian/changelog $(docdir2doc)
-	cd $(docdir2doc) && gzip -9 changelog
+	cd $(docdir2doc) && gzip -9n changelog
 	cp -r doc/html  $(docdir2doc)
 	ln -s ../debdelta-doc/debdelta_suite.pdf  $(docdir2)
 	ln -s ../debdelta-doc/html  $(docdir2)
@@ -94,10 +94,10 @@ binary-arch:	checkroot build
 	ln -s debdelta  $(D)/usr/bin/debdelta-upgrade
 	# /usr/share/doc
 	cp FAQ README.features debian/copyright debian/changelog $(docdir)
-	cd $(docdir) && gzip -9 changelog FAQ
+	cd $(docdir) && gzip -9n changelog FAQ
 	# man
 	cp *.1 $(mandir)
-	gzip -9 $(mandir)/*.1 
+	gzip -9n $(mandir)/*.1 
 	# build package
 	dpkg-shlibdeps $(D)/usr/lib/debdelta/minigzip  $(D)/usr/lib/debdelta/minibzip2
 	dpkg-gencontrol -Pdebian/debdelta -pdebdelta
