@@ -5,6 +5,8 @@ package = debdelta
 
 D = debian/debdelta
 
+BUILD_DATE := $(shell dpkg-parsechangelog --show-field Date)
+
 docdir = $(D)/usr/share/doc/$(package)
 mandir = $(D)/usr/share/man/man1/
 
@@ -58,6 +60,8 @@ binary-indep:	checkroot build
 	# build package
 	dpkg-gencontrol -Pdebian/debdelta-doc -pdebdelta-doc
 	chown -R root:root $(D2)
+	find debian/debdelta-doc -newermt '$(BUILD_DATE)' -print0 | \
+		xargs -0r touch --no-dereference --date='$(BUILD_DATE)'
 	dpkg-deb --build $(D2) ..
 
 binary-arch:	checkroot build
@@ -102,6 +106,8 @@ binary-arch:	checkroot build
 	dpkg-shlibdeps $(D)/usr/lib/debdelta/minigzip  $(D)/usr/lib/debdelta/minibzip2
 	dpkg-gencontrol -Pdebian/debdelta -pdebdelta
 	chown -R root:root $(D)
+	find debian/debdelta -newermt '$(BUILD_DATE)' -print0 | \
+		xargs -0r touch --no-dereference --date='$(BUILD_DATE)'
 	dpkg-deb --build $(D) ..
 
 define checkdir
