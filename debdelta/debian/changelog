@@ -1,3 +1,22 @@
+debdelta (0.56) unstable; urgency=medium
+
+  * sets the mtimes of built files, for reproducible metadata,
+    thanks Maria Valentina Marin (Closes: 793004)
+  * use  gzip -n  for reproducible builds,
+    thanks Chris Lamb (Closes: #777730)
+  * Add timeout option to debdelta-upgrade,
+    thanks Mert Dirik (Closes: 735142)
+  * Allow applying patches to unpacked .debs in locations other than /.
+    thanks Colin Watson (Closes: 710398)
+  * support i386 packages in amd64 hosts,
+    Thanks Carlos Maddela (Closes: #740552)
+  * Fix guessing of xz parameters for files compressed in parallel,
+    Thanks Carlos Maddela (Closes: #845173)
+  * merge server git branch and client git branch
+  * new 2017 signing gpg key
+
+ -- A Mennucc1 <mennucc1@debian.org>  Sun, 01 Jan 2017 23:58:49 +0100
+
 debdelta (0.55) unstable; urgency=medium
 
   * update git location
