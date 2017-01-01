@@ -535,7 +535,8 @@ class Release_as_dict(object):
 def _backup_Packages(now, where):
     distrib=mirrors_binary_Packages() 
     
-    thehash='sha1' # hash used to deduplicate
+    thehash='sha256' # hash used to deduplicate
+    # changed to sha256 after https://lists.debian.org/debian-devel-announce/2016/03/msg00006.html
     
     lb=list_backups() #list previous backups
     
