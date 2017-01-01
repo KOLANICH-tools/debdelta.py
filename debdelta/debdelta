@@ -686,7 +686,7 @@ def version_demangle(v):
     return join(v.split('%3a'),':')
   else:
     return v
-  
+
 def tempo():
   TD = abspath(tempfile.mkdtemp(prefix='debdelta',dir=TMPDIR))
   for i in 'OLD','NEW','PATCH' :
@@ -4834,13 +4834,13 @@ def delta_upgrade_(args):
       deb_path=string.join(deb_path[(thepoolindex):],'/')
       
       #try all possible variants of the filename
-      newdebs=[p.name+'_'+candidate_version+'_'+arch+'.deb',
+      newdebs=[p.shortname+'_'+candidate_version+'_'+arch+'.deb',
                os.path.basename(deb_uri)]
       if ':' in candidate_version:
         a=candidate_version.split(':')
-        newdebs.append(p.name+'_'+a[1]+'_'+arch+'.deb')
-        newdebs.append(p.name+'_'+a[0]+'%3A'+a[1]+'_'+arch+'.deb')
-        newdebs.append(p.name+'_'+a[0]+'%3a'+a[1]+'_'+arch+'.deb')
+        newdebs.append(p.shortname+'_'+a[1]+'_'+arch+'.deb')
+        newdebs.append(p.shortname+'_'+a[0]+'%3A'+a[1]+'_'+arch+'.deb')
+        newdebs.append(p.shortname+'_'+a[0]+'%3a'+a[1]+'_'+arch+'.deb')
       
       for newdeb in newdebs:
         if os.path.exists(DEB_DIR+'/'+newdeb) or \
@@ -5255,7 +5255,7 @@ elif action == 'patch-url':
       continue
 
     #delta name
-    delta_name=p.name+'_'+version_mangle(installed_version)+\
+    delta_name=p.shortname+'_'+version_mangle(installed_version)+\
                 '_'+ version_mangle(candidate_version)+'_'+\
                 arch+'.debdelta'
   
