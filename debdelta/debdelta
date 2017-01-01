@@ -2908,7 +2908,7 @@ def do_delta_(olddeb,newdeb,delta,TD,forensic_file=None):
         #assert w.wait() == 0
         if c.wait() :
           redo=True
-          if VERBOSE or DEBUG : print ' Tried XZ options but failed: ',par,crc
+          if VERBOSE or DEBUG : print ' Tried XZ options but failed: ',par,crc,thread
         if redo and not PARS:
           #print '  HO FINITO LE OPZIONI !'
           os.unlink(z.name)
