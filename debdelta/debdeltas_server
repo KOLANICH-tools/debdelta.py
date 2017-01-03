@@ -458,7 +458,7 @@ def mirrors_binary_Packages(mirrorsdir=mirrorsdir,archs=architectures):
     distrib={}
     #iterate to list mirrors
     for m in os.listdir(mirrorsdir):
-        if os.path.isdir(join(mirrorsdir,m)):
+        if os.path.isdir(join(mirrorsdir,m)) and m not in mirrors_exclude:
             distrib[m]={}
     # iterate to find distributions in mirrors
     for m in distrib:
