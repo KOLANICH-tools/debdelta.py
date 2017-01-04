@@ -2901,6 +2901,10 @@ def do_delta_(olddeb,newdeb,delta,TD,forensic_file=None):
     PARS=['-6e','-9','-9e']
     if par:
       PARS.append(par)
+      if par == '--lzma2=dict=1MiB':
+        # dbgsym deb files are compressed with -1e
+        PARS.append('-1')
+        PARS.append('-1e')
     if check:
       redo=True
       while redo and PARS:
