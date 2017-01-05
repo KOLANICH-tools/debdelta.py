@@ -15,6 +15,10 @@ D2 = debian/debdelta-doc
 docdir2 = $(D2)/usr/share/doc/$(package)
 docdir2doc = $(D2)/usr/share/doc/$(package)-doc
 
+PO_FILES := $(wildcard po/*.po)
+MO_FILES := $(patsubst %.po,%.mo,$(PO_FILES))
+LANGS := $(patsubst po/%.po,%,$(PO_FILES))
+
 CC = gcc
 
 INSTALL_PROGRAM = install
@@ -68,13 +72,13 @@ binary-arch:	checkroot build
 	$(checkdir)
 	rm -rf $(D)
 	# dirs
-	install -d $(D)/DEBIAN $(D)/usr/bin $(docdir) $(mandir) $(D)/usr/lib/debdelta $(D)/usr/share/debdelta $(D)/usr/share/keyrings $(D)/usr/share/locale/it/LC_MESSAGES $(D)/usr/share/locale/fr/LC_MESSAGES
+	install -d $(D)/DEBIAN $(D)/usr/bin $(docdir) $(mandir) $(D)/usr/lib/debdelta $(D)/usr/share/debdelta $(D)/usr/share/keyrings
+	for L in $(LANGS) ; do install -d $(D)/usr/share/locale/$${L}/LC_MESSAGES ; done
 	# control
 	install -m 755 debian/postrm $(D)/DEBIAN/
 	install -m 755 debian/postinst $(D)/DEBIAN/
 	# /usr/share
-	cp po/it.mo $(D)/usr/share/locale/it/LC_MESSAGES/debdelta.mo
-	cp po/fr.mo $(D)/usr/share/locale/fr/LC_MESSAGES/debdelta.mo
+	for L in $(LANGS) ; do 	cp po/$${L}.mo $(D)/usr/share/locale/$${L}/LC_MESSAGES/debdelta.mo ; done
 	install debpatch.sh $(D)/usr/share/debdelta
 	install contrib/debmirror-delta-security $(D)/usr/share/debdelta/
 	install contrib/debmirror-marshal-deltas $(D)/usr/share/debdelta/
