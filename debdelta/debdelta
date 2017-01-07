@@ -912,9 +912,9 @@ def verify_signature(signature, DIR):
   
   os.close(temp_fd)
   
-  if VERBOSE > 1 or p.returncode:
+  if VERBOSE > 2 or p.returncode:
     for j in open(temp_name):
-      print '  GPG> ',j,
+      print '   GPG> ',j,
   
   os.unlink(temp_name)
   
