@@ -181,7 +181,7 @@ ALT     = []
 OLD     = []
 ACT     = True
 DO_MD5  = True
-DEB_POLICY = ['b','s','e']
+DEB_POLICY = ['b','s','e','t']
 DO_PROGRESS = terminalcolumns != None
 
 #where/how debpatch/debdelta-upgrade will send forensic data, when patching fails
@@ -4855,6 +4855,7 @@ def delta_upgrade_(args):
       deb_uri=candidate.uri
       installed_version=p.installed.version
       candidate_version=p.candidate.version
+      newsize=p.candidate.size
       deb_path=string.split(deb_uri,'/')
       try:
         thepoolindex=deb_path.index('pool')
@@ -4940,6 +4941,16 @@ def delta_upgrade_(args):
 
       if status == 404: 
         not_available_deltas.append(p.name)
+        # packages smaller than MIN_DEB_SIZE are ignored by the server. FIXME support ftp or proxies
+        if  uri[:7] == 'http://' and not proxies and newsize <=  2 * MIN_DEB_SIZE : # check only on small packages
+          smallstatus = test_uri(uri+'-smalldeb')
+          if smallstatus == 200:
+            print(_('Delta was not created since new package is too small:')+' '+delta_name)
+            if 't' in DEB_POLICY:
+              no_delta.append( (deb_uri, newdeb) )
+            elif VERBOSE > 1 : print '  No deb-policy "t", no download of ',deb_uri
+            continue
+        # check if delta is too big
         if uri[:7] == 'http://' and not proxies: # FIXME support ftp or proxies
           bigrstatus = test_uri(uri+'-too-big')
         else:
