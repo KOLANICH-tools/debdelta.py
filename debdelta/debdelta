@@ -3869,6 +3869,8 @@ def iter_deltas_one_pack_arch(pa,ar,info_pack,thedir,theforensicdir,VersionCompa
     #very small packages cannot be effectively delta-ed
     if newdebsize <= MIN_DEB_SIZE :
       if VERBOSE > 1 : print '  Skip , too small: ', new['File']
+      # create stamp to recall this fact, useful for clients
+      open(delta+'-smalldeb','w').close()
       return
 
     oldn = newest
