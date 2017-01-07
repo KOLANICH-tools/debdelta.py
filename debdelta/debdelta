@@ -4951,23 +4951,19 @@ def delta_upgrade_(args):
             elif VERBOSE > 1 : print '  No deb-policy "t", no download of ',deb_uri
             continue
         # check if delta is too big
-        if uri[:7] == 'http://' and not proxies: # FIXME support ftp or proxies
-          bigrstatus = test_uri(uri+'-too-big')
-        else:
-          bigrstatus = None
-        if bigrstatus == 200 :
+        if uri[:7] == 'http://' and not proxies  and 200 == test_uri(uri+'-too-big'): # FIXME support ftp or proxies
           print _('Delta is too big:')+' '+delta_name
           if 'b' in DEB_POLICY:
             no_delta.append( (deb_uri, newdeb) )
           elif VERBOSE > 1 : print '  No deb-policy "b", no download of ',deb_uri
+          continue
+        if DEBUG and VERBOSE:
+          print _('Delta is not present:')+' '+uri
         else:
-          if DEBUG and VERBOSE:
-            print _('Delta is not present:')+' '+uri
-          else:
-            print _('Delta is not present:')+' '+delta_name
-          if 'u' in DEB_POLICY:
-            no_delta.append( (deb_uri, newdeb) )
-          elif VERBOSE > 1 : print '  No deb-policy "u", no download of ',deb_uri
+          print _('Delta is not present:')+' '+delta_name
+        if 'u' in DEB_POLICY:
+          no_delta.append( (deb_uri, newdeb) )
+        elif VERBOSE > 1 : print '  No deb-policy "u", no download of ',deb_uri
         continue
 
       if VERBOSE > 1:
