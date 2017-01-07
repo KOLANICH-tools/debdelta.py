@@ -4674,7 +4674,11 @@ def delta_upgrade_(args):
       r, status, msg, responseheaders=_connect(uri, re)
       if not hasattr(r,'read') and responseheaders==None:
         return r, None, None, None
-      if status == 206:
+      if status == 301 and 'location' in responseheaders:
+        r.read()
+        r.close()
+        return download_10k_uri(responseheaders['location'], outname)
+      elif status == 206:
         outnametemp=os.path.join(os.path.dirname(outname),'partial',os.path.basename(outname))
         try:
           l = _parse_ContentRange(responseheaders['Content-Range'])[2]
@@ -4728,7 +4732,12 @@ def delta_upgrade_(args):
       start_time=time.time()
       r, status, message, responseheaders = _connect(uri, re)
       if not hasattr(r,'read') and responseheaders==None:
-        return 
+        return
+      if status == 301 and 'location' in responseheaders:
+        r.read()
+        r.close()
+        if VERBOSE > 1 : print(_('  Redirect to:')+' '+repr(responseheaders['location']))
+        return download_uri(responseheaders['location'], outname, conn_time, len_downloaded, statusdb)
       if not ( status == None or status == 200 or ( status == 206 and l != None ) ):
         if VERBOSE :
           print 'Connection problem, status:'+str(status)+' msg:'+str(message)+' uri:'+str(uri)
