@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: debdelta\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-01-03 22:12+0100\n"
+"POT-Creation-Date: 2017-01-07 18:04+0100\n"
 "PO-Revision-Date: 2012-08-02 23:25+0200\n"
 "Last-Translator: Thomas Blein <tblein@tblein.eu>\n"
 "Language-Team: French <debian-l10n-french@lists.debian.org>\n"
@@ -381,7 +381,7 @@ msgstr "(prelink %(time).2f sec, %(size)d k, %(speed)d k/s)"
 msgid "(unaccounted %.2fsec)"
 msgstr "(inexpliqué %.2f sec)"
 
-#: ../debdelta:3587
+#: ../debdelta:3591
 #, python-format
 msgid ""
 "delta is %(perc)3.1f%% of deb; that is, %(save)dkB are saved, on a total of "
@@ -390,7 +390,7 @@ msgstr ""
 "Le delta a une taille de %(perc)3.1f %% du deb ; c'est-à-dire que "
 "%(save)d kB ont été économisés sur un total de %(tot)d kB."
 
-#: ../debdelta:3589
+#: ../debdelta:3593
 #, python-format
 msgid ""
 "delta time %(time).2f sec, speed %(speed)dkB /sec, (%(algo)s time "
@@ -399,48 +399,48 @@ msgstr ""
 "delta temps %(time).2f sec, vitesse %(speed)d kB/sec, (%(algo)s temps "
 "%(algotime).2f sec vitesse %(algospeed)d kB/sec) (corr %(corrtime).2f sec)"
 
-#: ../debdelta:3960
+#: ../debdelta:3966
 #, python-format
 msgid "Not enough disk space for storing `%s'."
 msgstr "Pas assez d'espace disque pour enregistrer « %s »"
 
-#: ../debdelta:3980
+#: ../debdelta:3986
 msgid "Creating:"
 msgstr "Création :"
 
-#: ../debdelta:3981
+#: ../debdelta:3987
 #, fuzzy
 #| msgid "Error: testing of delta failed:"
 msgid "Creation of delta failed, reason:"
 msgstr "Erreur : les tests de delta ont échoué :"
 
-#: ../debdelta:3984 ../debdelta:4023 ../debdelta:4037
+#: ../debdelta:3990 ../debdelta:4029 ../debdelta:4043
 msgid "You may want to examine:"
 msgstr ""
 
-#: ../debdelta:4020
+#: ../debdelta:4026
 msgid "Error: testing of delta failed:"
 msgstr "Erreur : les tests de delta ont échoué :"
 
-#: ../debdelta:4094
+#: ../debdelta:4100
 msgid "Warning, no non-option arguments, debdeltas does nothing."
 msgstr "Attention, aucun paramètre non-option, aucune action de debdeltas."
 
-#: ../debdelta:4098
+#: ../debdelta:4104
 msgid "Warning, no --old arguments, debdeltas will not generate any deltas."
 msgstr "Attention, aucun paramètre --old, debdeltas ne générera aucun delta."
 
-#: ../debdelta:4222
+#: ../debdelta:4228
 #, python-format
 msgid "Total running time: %.1f"
 msgstr "Temps d'exécution total : %.1f"
 
-#: ../debdelta:4337
+#: ../debdelta:4343
 #, python-format
 msgid "(sources.conf does not provide a server for `%s')"
 msgstr "(sources.conf ne fournit aucun serveur pour « %s »)"
 
-#: ../debdelta:4352
+#: ../debdelta:4358
 msgid ""
 " Proxy settings detected in the environment; using \"urllib2\" for "
 "downloading; but\n"
@@ -452,114 +452,126 @@ msgstr ""
 "caractéristiques et c'est généralement plus lent. Consultez la page de "
 "manuel."
 
-#: ../debdelta:4364 ../debdelta:4366
+#: ../debdelta:4370 ../debdelta:4372
 msgid "Initializing APT cache..."
 msgstr "Initialisation du cache APT…"
 
-#: ../debdelta:4394
+#: ../debdelta:4400
 msgid "Upgrading APT cache..."
 msgstr "Mise à niveau du cache APT…"
 
-#: ../debdelta:4396
+#: ../debdelta:4402
 msgid "upgrading..."
 msgstr "mise à niveau…"
 
-#: ../debdelta:4403
+#: ../debdelta:4409
 msgid "Failed! Safe upgrading APT cache..."
 msgstr "Échec ! Mise à niveau conservative du cache APT…"
 
-#: ../debdelta:4405
+#: ../debdelta:4411
 msgid "failed! trying safe-upgrade..."
 msgstr "Échec ! Essai d'une mise à niveau conservative (« safe-upgrade »)"
 
-#: ../debdelta:4409
+#: ../debdelta:4415
 msgid "Upgraded APT cache."
 msgstr "Le cache APT a été mis à niveau."
 
-#: ../debdelta:4411
+#: ../debdelta:4417
 msgid "done."
 msgstr "Effectué."
 
-#: ../debdelta:4448
+#: ../debdelta:4454
 #, python-format
 msgid "Recreated debs are saved in the directory %s"
 msgstr "Les debs recréés sont sauvés dans le répertoire %s."
 
-#: ../debdelta:4491
+#: ../debdelta:4497
 #, python-format
 msgid "Created,    time %(time)5.2fsec, speed %(speed)4s/sec, %(name)s"
 msgstr "Créé,       temps %(time)5.2f sec, vitesse %(speed)4s/sec, %(name)s"
 
-#: ../debdelta:4766
+#: ../debdelta:4743
+msgid "  Redirect to:"
+msgstr ""
+
+#: ../debdelta:4781
 msgid "Not enough disk space to download:"
 msgstr "Pas assez d'espace disque pour télécharger :"
 
-#: ../debdelta:4791
+#: ../debdelta:4806
 #, python-format
 msgid "Downloaded, time %(time)5.2fsec, speed %(speed)4s/sec, %(name)s"
 msgstr "Téléchargé, temps %(time)5.2f sec, vitesse %(speed)4s/sec, %(name)s"
 
-#: ../debdelta:4926
+#: ../debdelta:4942
 #, python-format
 msgid "Downloading head of %s..."
 msgstr "Téléchargement de l'entête de %s…"
 
-#: ../debdelta:4946
+#: ../debdelta:4961
+msgid "Delta was not created since new package is too small:"
+msgstr ""
+
+#: ../debdelta:4968
 msgid "Delta is too big:"
 msgstr "Le delta est trop important :"
 
-#: ../debdelta:4952 ../debdelta:4954
+#: ../debdelta:4975
+msgid "Delta missing, server failed to create it:"
+msgstr ""
+
+#: ../debdelta:4981 ../debdelta:4983
 msgid "Delta is not present:"
 msgstr "Le delta est absent :"
 
-#: ../debdelta:4964
+#: ../debdelta:4993
 #, python-format
 msgid "Downloaded head of %s."
 msgstr "En-tête du fichier %s téléchargé."
 
-#: ../debdelta:5002
+#: ../debdelta:5031
 #, python-format
 msgid "Deltas: %(present)d present and %(absent)d not,"
 msgstr "Deltas : %(present)d présent et %(absent)d absent,"
 
-#: ../debdelta:5004
+#: ../debdelta:5033
 #, python-format
 msgid ""
 "downloaded so far: time %(time).2fsec, size %(size)s, speed %(speed)4s/sec."
 msgstr ""
 "déjà téléchargé : %(time).2f sec, taille %(size)s, vitesse de %(speed)4s/sec."
 
-#: ../debdelta:5007
+#: ../debdelta:5036
 #, python-format
 msgid "Need to get %s of deltas."
 msgstr "Besoin de récupérer %s des deltas."
 
-#: ../debdelta:5043
+#: ../debdelta:5072
 msgid "You may wish to rerun, to get also:"
 msgstr "Vous pourriez relancer, pour obtenir également :"
 
-#: ../debdelta:5098
+#: ../debdelta:5127
 msgid "Delta-upgrade statistics:"
 msgstr "Statistiques de delta-upgrade :"
 
-#: ../debdelta:5099
+#: ../debdelta:5128
 #, python-format
 msgid "size %(size)s time %(time)dsec speed %(speed)s/sec"
 msgstr "taille %(size)s temps %(time)d sec vitesse %(speed)s/sec"
 
-#: ../debdelta:5104
+#: ../debdelta:5133
 msgid "downloaded deltas, "
 msgstr "deltas téléchargés, "
 
-#: ../debdelta:5109
+#: ../debdelta:5138
 msgid "patching to debs, "
 msgstr "correction des debs, "
 
-#: ../debdelta:5114
+#: ../debdelta:5143
 msgid "downloaded debs, "
 msgstr "debs téléchargé, "
 
-#: ../debdelta:5119
+#: ../debdelta:5148
 #, python-format
 msgid ""
 "total resulting debs, size %(size)s time %(time)dsec virtual speed %(speed)s/"
@@ -568,37 +580,37 @@ msgstr ""
 "debs résultant totaux, taille %(size)s temps %(time)d sec vitesse virtuelle "
 "%(speed)s/sec"
 
-#: ../debdelta:5137
+#: ../debdelta:5166
 msgid "Need a filename; try --help."
 msgstr "Besoin d'un nom de fichier ; essayez --help."
 
-#: ../debdelta:5158 ../debdelta:5182
+#: ../debdelta:5187 ../debdelta:5211
 msgid "Need 3 filenames; try --help."
 msgstr "Besoin de trois noms de fichier ; essayez --help."
 
-#: ../debdelta:5202
+#: ../debdelta:5231
 msgid "Error: argument is not a directory or a regular file:"
 msgstr ""
 "Erreur : le paramètre n'est pas un répertoire ou un fichier classique :"
 
-#: ../debdelta:5255
+#: ../debdelta:5284
 #, python-format
 msgid "Lookup %s"
 msgstr "Recherche %s"
 
-#: ../debdelta:5261
+#: ../debdelta:5290
 #, python-format
 msgid "Sorry, cannot find an URI to download the debian package of `%s'."
 msgstr ""
 "Désolé, impossible de trouver une URI pour télécharger le paquet debian "
 "« %s »."
 
-#: ../debdelta:5277
+#: ../debdelta:5306
 #, python-format
 msgid "Sorry, no source is available to upgrade `%s'."
 msgstr "Désolé, aucune source disponible pour la mise à niveau de « %s »."
 
-#: ../debdelta:5281
+#: ../debdelta:5310
 #, python-format
 msgid "Sorry, the package `%s' is already at its newest version."
 msgstr "Désolé, le paquet « %s » est déjà à la version la plus récente."
