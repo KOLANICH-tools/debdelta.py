@@ -37,11 +37,12 @@ policy to decide which debs to download,
 it is a comma separated list of (abbreviations of)
     source =  there is no /etc/debdelta/sources.conf line
     big =  the delta is too big
-    error =  the delta fails to apply
+    error =  the delta fails to apply in the client
     tiny = the new package is small (the server ignores such packages)
+    fail = the server failed to create the delta
     unavailable = all other cases
     after = continue downloading debs after patching has ended
-  default is s,b,e,t
+  default is s,b,e,t,f
 .TP
 \fB\-v
 verbose (can be added multiple times).

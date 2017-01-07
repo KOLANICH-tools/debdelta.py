@@ -181,7 +181,7 @@ ALT     = []
 OLD     = []
 ACT     = True
 DO_MD5  = True
-DEB_POLICY = ['b','s','e','t']
+DEB_POLICY = ['b','s','e','t','f']
 DO_PROGRESS = terminalcolumns != None
 
 #where/how debpatch/debdelta-upgrade will send forensic data, when patching fails
@@ -4956,6 +4956,13 @@ def delta_upgrade_(args):
           if 'b' in DEB_POLICY:
             no_delta.append( (deb_uri, newdeb) )
           elif VERBOSE > 1 : print '  No deb-policy "b", no download of ',deb_uri
+          continue
+        #check if delta failed upstream
+        if uri[:7] == 'http://' and not proxies and 200 ==  test_uri(uri+'-fails'): # FIXME support ftp or proxies
+          print _('Delta missing, server failed to create it:')+' '+uri
+          if 'f' in DEB_POLICY:
+            no_delta.append( (deb_uri, newdeb) )
+          elif VERBOSE > 1 : print '  No deb-policy "u", no download of ',deb_uri
           continue
         if DEBUG and VERBOSE:
           print _('Delta is not present:')+' '+uri
