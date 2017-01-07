@@ -1,3 +1,16 @@
+debdelta (0.57) unstable; urgency=medium
+
+  * Autodetect and install all available translations.
+    Thanks Carlos Maddela. Closes: #849908
+  * Update Italian translation.
+  * Fix guessing of xz parameters for dbgsym files.
+  * debdelta-upgrade: explain why the delta is not available; and also add
+    corresponding --deb-policies.
+    Thanks  shirish शिरीष . Closes: #779897
+  * debdelta-upgrade handles redirects. Thanks Paul Wise. Closes: #835655
+
+ -- A Mennucc1 <mennucc1@debian.org>  Sat, 07 Jan 2017 18:16:32 +0100
+
 debdelta (0.56) unstable; urgency=medium
 
   * sets the mtimes of built files, for reproducible metadata,
