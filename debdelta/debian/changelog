@@ -1,4 +1,4 @@
-debdelta (0.57) unstable; urgency=medium
+debdelta (0.57) unreleased; urgency=medium
 
   * Autodetect and install all available translations.
     Thanks Carlos Maddela. Closes: #849908
