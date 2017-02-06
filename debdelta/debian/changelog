@@ -1,3 +1,20 @@
+debdelta (0.58exp) experimental; urgency=medium
+
+  * Bug fix: "cannot handle redirects",
+    thanks to Paul Wise (Closes: #835655).
+  * Bug fix: "Portuguese translation not packaged",
+    thanks to Carlos Maddela (Closes: #849908).
+  * Bug fix: "[INTL:pt] Updated Portuguese translation for program",
+    thanks to Miguel Figueiredo (Closes: #852087).
+  * Installation leaves gpg-agent process running
+    Thanks Andreas Beckmann (Closes: #85135).
+  * Various code fixes.
+  * Lintian fixes:
+    - rewrite copyright using  copyright-format/1.0/
+    - bump standards version to 3.9.8
+
+ -- A Mennucc1 <mennucc1@debian.org>  Mon, 06 Feb 2017 12:49:20 +0100
+
 debdelta (0.57) unreleased; urgency=medium
 
   * Autodetect and install all available translations.
