@@ -41,6 +41,7 @@ case "$1" in
 
     c=0 ;  if  check1it ; then   c=1 ;  fi
     gpg --no-tty --batch --no-options --no-auto-check-trustdb --homedir ${GPG_HOME} --import ${GPG_MASTER_PUB_KEYRING} || true
+    gpgconf --homedir ${GPG_HOME} --kill gpg-agent || true
     if test $c = 1 ; then sha1it ; fi
 
     ;;
