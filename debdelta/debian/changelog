@@ -1,3 +1,15 @@
+debdelta (0.59) unstable; urgency=medium
+
+  * really bump standards version to 3.9.8
+  * correct typo in copyright
+  * fix code for small debs, do not check for stamps
+  * Bug fix: "local variable 'url' referenced before assignment",
+    thanks to Steffen Weinhart, (Closes: #708022).
+  * Add 'set -e' in debian/rules. Thanks Niels Thykier
+  * correct wrong message 'No deb-policy "u" ....' Thanks Niels Thykier
+
+ -- A Mennucc1 <mennucc1@debian.org>  Wed, 08 Feb 2017 11:28:50 +0100
+
 debdelta (0.58exp) experimental; urgency=medium
 
   * Bug fix: "cannot handle redirects",
