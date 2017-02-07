@@ -4948,15 +4948,6 @@ def delta_upgrade_(args):
 
       if status == 404: 
         not_available_deltas.append(p.name)
-        # packages smaller than MIN_DEB_SIZE are ignored by the server. FIXME support ftp or proxies
-        if  uri[:7] == 'http://' and not proxies and newsize <=  2 * MIN_DEB_SIZE : # check only on small packages
-          smallstatus = test_uri(uri+'-smalldeb')
-          if smallstatus == 200:
-            print(_('Delta was not created since new package is too small:')+' '+delta_name)
-            if 't' in DEB_POLICY:
-              no_delta.append( (deb_uri, newdeb) )
-            elif VERBOSE > 1 : print '  No deb-policy "t", no download of ',deb_uri
-            continue
         # check if delta is too big
         if uri[:7] == 'http://' and not proxies  and 200 == test_uri(uri+'-too-big'): # FIXME support ftp or proxies
           print _('Delta is too big:')+' '+delta_name
@@ -4971,6 +4962,18 @@ def delta_upgrade_(args):
             no_delta.append( (deb_uri, newdeb) )
           elif VERBOSE > 1 : print '  No deb-policy "u", no download of ',deb_uri
           continue
+        ### FIXME the server is not generating these stamps !
+        #if  uri[:7] == 'http://' and not proxies and newsize <=  2 * MIN_DEB_SIZE : # check only on small packages
+        #  smallstatus = test_uri(uri+'-smalldeb')
+        #  if smallstatus == 200: ETC ETC
+        ###
+        # packages smaller than MIN_DEB_SIZE are ignored by the server.
+        if  newsize <=  MIN_DEB_SIZE : # check only on small packages
+            print(_('Delta was not created since new package is too small:')+' '+delta_name)
+            if 't' in DEB_POLICY:
+              no_delta.append( (deb_uri, newdeb) )
+            elif VERBOSE > 1 : print '  No deb-policy "t", no download of ',deb_uri
+            continue
         if DEBUG and VERBOSE:
           print _('Delta is not present:')+' '+uri
         else:
