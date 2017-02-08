@@ -4960,7 +4960,7 @@ def delta_upgrade_(args):
           print _('Delta missing, server failed to create it:')+' '+uri
           if 'f' in DEB_POLICY:
             no_delta.append( (deb_uri, newdeb) )
-          elif VERBOSE > 1 : print '  No deb-policy "u", no download of ',deb_uri
+          elif VERBOSE > 1 : print '  No deb-policy "f", no download of ',deb_uri
           continue
         ### FIXME the server is not generating these stamps !
         #if  uri[:7] == 'http://' and not proxies and newsize <=  2 * MIN_DEB_SIZE : # check only on small packages
