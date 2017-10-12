@@ -5030,6 +5030,17 @@ def delta_upgrade_(args):
     if available_deltas:
       print ' '+_('Need to get %s of deltas.') %  SizeToKibiStr(sum([a[0] for a in available_deltas]))
 
+  ###################### check available space
+  a=freespace('/var/cache/apt/archives') / 1024
+  b=sum([int(s.get('NEW/Installed-Size','0')) for s in params_of_delta.values()])
+  c=sum([int(s.get('NEW/Size','0')) for s in params_of_delta.values()]) / 1024
+  if DEB_FORMAT == 'deb' and a < c:
+    print('**'+_('Very low disk space, need %(need)d kB have %(have)d kB') %\
+          {'need':c,'have':a})
+  if DEB_FORMAT == 'unzipped' and a < b:
+    print('**'+_('Very low disk space, need %(need)d kB have %(have)d kB') %\
+          {'need':b,'have':a})
+
   ###################### start  progress thread
   
   def print_progress(common_db):
