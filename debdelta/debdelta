@@ -4957,7 +4957,7 @@ def delta_upgrade_(args):
           continue
         #check if delta failed upstream
         if uri[:7] == 'http://' and not proxies and 200 ==  test_uri(uri+'-fails'): # FIXME support ftp or proxies
-          print _('Delta missing, server failed to create it:')+' '+uri
+          print _('Delta missing, server failed to create it:')+' '+delta_name
           if 'f' in DEB_POLICY:
             no_delta.append( (deb_uri, newdeb) )
           elif VERBOSE > 1 : print '  No deb-policy "f", no download of ',deb_uri
