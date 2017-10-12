@@ -1900,8 +1900,9 @@ def do_patch_(delta, olddeb, newdeb, TD, runtime,
   script_time = - time.time()
 
   this_deb_format=DEB_FORMAT
-  if DEB_FORMAT != 'deb' and 'NEW/data.tar' not in params:
+  if this_deb_format != 'deb' and 'NEW/data.tar' not in params:
     #this patch does not support streaming
+    print 'Warning, created as standard deb: ',newdeb
     this_deb_format='deb'
   
   if this_deb_format == 'preunpacked' : #need a fifo
@@ -2156,9 +2157,6 @@ def do_patch_(delta, olddeb, newdeb, TD, runtime,
 
   if newdeb:
     shutil.move(TD+'NEW.file',newdeb)
-    if DEB_FORMAT != this_deb_format:
-      #this should not be localized
-      print 'Warning, created as standard deb: ',newdeb
 
   end_sec = time.time()
   elaps=(end_sec - start_sec)
