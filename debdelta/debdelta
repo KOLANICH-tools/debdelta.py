@@ -4731,7 +4731,7 @@ def delta_upgrade_(args):
       r, status, message, responseheaders = _connect(uri, re)
       if not hasattr(r,'read') and responseheaders==None:
         return
-      if status == 301 and 'location' in responseheaders:
+      if status in (301,302) and 'location' in responseheaders:
         r.read()
         r.close()
         if VERBOSE > 1 : print(_('  Redirect to:')+' '+repr(responseheaders['location']))
