@@ -1,3 +1,9 @@
+debdelta (0.60) unstable; urgency=medium
+
+  * better support for  httpredir.debian.org
+
+ -- A Mennucc1 <mennucc1@debian.org>  Thu, 12 Oct 2017 12:41:46 +0200
+
 debdelta (0.59) unstable; urgency=medium
 
   * really bump standards version to 3.9.8
