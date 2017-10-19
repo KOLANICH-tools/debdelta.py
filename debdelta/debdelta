@@ -4846,7 +4846,7 @@ def delta_upgrade_(args):
     #print progress
     if DO_PROGRESS :
       progress_count+=1
-      if 0 == (progress_count & 63):
+      if 0 == (progress_count & 2047):
         sys.stderr.write(string.ljust('%2.1f%%' % (float(progress_count) * 100.0 / len(cache)),
                                        terminalcolumns) + '\r')
 
