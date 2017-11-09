@@ -2251,12 +2251,16 @@ def do_delta_(olddeb,newdeb,delta,TD,forensic_file=None):
   check_deb(olddeb)
   os.symlink(olddeb,TD+'/OLD.file')
   olddebsize = os.stat(olddeb)[ST_SIZE]
-  
+
   newdeb=abspath(newdeb)
   check_deb(newdeb)
   os.symlink(newdeb,TD+'/NEW.file')
   newdebsize = os.stat(newdeb)[ST_SIZE]
-  
+
+  #process all contents of old vs new .deb
+  ar_list_old= list_ar(TD+'OLD.file')
+  ar_list_new= list_ar(TD+'NEW.file')
+
   free=freespace(TD)
   if free and free < newdebsize :
     raise DebDeltaError('Error: not enough disk space in '+TD, True)
@@ -3415,9 +3419,6 @@ def do_delta_(olddeb,newdeb,delta,TD,forensic_file=None):
   assert( "!<arch>\n" == s)
   append_NEW_file(s)
 
-  #process all contents of old vs new .deb
-  ar_list_old= list_ar(TD+'OLD.file')
-  ar_list_new= list_ar(TD+'NEW.file')
   
   if forensic_file==None:
     control_forensic=None
