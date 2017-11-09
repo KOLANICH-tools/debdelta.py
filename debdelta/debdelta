@@ -1613,10 +1613,15 @@ def do_patch_(delta, olddeb, newdeb, TD, runtime,
 
   if not os.path.isdir(olddeb):
       os.symlink(olddeb,TD+'/OLD.file')
+      ar_list_old= list_ar(TD+'OLD.file')
       #unpack the old control structure, if available
       os.mkdir(TD+'/OLD/CONTROL')
       #unpack control.tar.gz
-      system(('ar','p',TD+'OLD.file','control.tar.gz','|','tar','-xzp','-f','-','-C',TD+'OLD/CONTROL'),TD)
+      for a in ar_list_old :
+        if a[:12]=='control.tar.':
+          f=a
+      b={'.gz':'-z','.xz':'-J','.bz2':'-j'}.get(f[11:])
+      system(('ar','p',TD+'OLD.file',f,'|','tar',b,'-xp','-f','-','-C',TD+'OLD/CONTROL'),TD)
   #then we check for the conformance
   if not os.path.isdir(olddeb) and 'OLD/Size' in params:
     olddebsize = os.stat(olddeb)[ST_SIZE]
@@ -2408,10 +2413,15 @@ def do_delta_(olddeb,newdeb,delta,TD,forensic_file=None):
     if s not in info:
       info.append(s)
   
-  for o in 'OLD', 'NEW' :
+  for o,l in ('OLD',ar_list_old) , ('NEW',ar_list_new):
       os.mkdir(TD+o+'/CONTROL')
       #unpack control.tar.gz
-      system(('ar','p',TD+o+'.file','control.tar.gz','|','tar','-xzf','-','-C',TD+o+'/CONTROL'),TD)
+      f=None
+      for a in l :
+        if a[:12]=='control.tar.':
+          f=a
+      b={'.gz':'-z','.xz':'-J','.bz2':'-j'}.get(f[11:])
+      system(('ar','p',TD+o+'.file',f,'|','tar',b,'-xf','-','-C',TD+o+'/CONTROL'),TD)
       ## scan control
       p=open(TD+'/'+o+'/CONTROL/control')
       s=[]
