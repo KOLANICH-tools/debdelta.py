@@ -856,7 +856,8 @@ def _worker_creates_deltas(exit_when_queue_empty=False):
                         # FIXME REQUEUE if r == 1
                 except Exception, e:
                     logger.exception('while do_delta_and_test')
-            if (created and last_publishing > 600 + time.time()) or len(created)>20 :
+            if (created and last_publishing > publisher_interval + time.time()) or \
+               len(created) > publisher_flush_deltas :
                 publish(publisher, created)
                 created=[]
                 last_publishing = time.time()
