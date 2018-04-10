@@ -777,6 +777,11 @@ def _scan_backups_queue_deltas(bPd=backup_Packages_dir):
             # it is ok since they will have newer timestamps
             thesqldb.queue_add(priority, old['File'], new['File'], delta, forensicfile)
             logger.debug('queued: %r' ,( priority, old, new, delta, forensicfile))
+            #
+            deltadirname=os.path.dirname(delta)
+            if not os.path.exists(deltadirname):
+                os.makedirs(deltadirname)
+            open(delta+'-queued','w')
     thesqldb.queue_add_commit()
 
 
@@ -858,9 +863,11 @@ def _worker_creates_deltas(exit_when_queue_empty=False):
                             created.append(x[E.delta])
                     else:
                         logger.warn('failed %r' , repr(x[E.delta]))
-                        # FIXME REQUEUE if r == 1
+                        # FIXME REQUEUE if r == 1 , in case recreate timestamp
                 except Exception, e:
                     logger.exception('while do_delta_and_test')
+            if os.path.exists(x[E.delta]+'-queued'):
+                os.unlink(x[E.delta]+'-queued')
             if (created and last_publishing > publisher_interval + time.time()) or \
                len(created) > publisher_flush_deltas :
                 publish(publisher, created)
