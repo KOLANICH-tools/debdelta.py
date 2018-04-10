@@ -769,9 +769,14 @@ def _scan_backups_queue_deltas(bPd=backup_Packages_dir):
     for old, new, delta, forensicfile in iter_backups_for_deltas(bPd):
         p=old['Packages_file']
         priority=compute_priority(old,new)
-        thesqldb.queue_add(priority, old['File'], new['File'], delta, forensicfile)
-        #logger.info('%r' ,( priority, old, new, delta, forensicfile))
-        
+        if  os.path.isfile(delta) or os.path.exists(delta+'-too-big') or os.path.exists(delta+'-fails'):
+            # fixme should check also if the new deb is too small
+            logger.debug('exists, not queued: %r' ,( priority, old, new, delta, forensicfile))
+        else:
+            # this may actually requeue already queued records...
+            # it is ok since they will have newer timestamps
+            thesqldb.queue_add(priority, old['File'], new['File'], delta, forensicfile)
+            logger.debug('queued: %r' ,( priority, old, new, delta, forensicfile))
     thesqldb.queue_add_commit()
 
 
