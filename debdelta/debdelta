@@ -3980,7 +3980,7 @@ def do_delta_and_test(old_File, new_File, delta, forensicfile):
         try:
           ret=do_delta_(old_File,new_File, deltatmp, TD=tdir, forensic_file=forensic_file)
           (deltatmp_, percent, elaps, info_delta, gpg_hashes) = ret
-        except KeyboardInterrupt:
+        except (KeyboardInterrupt, SystemExit):
           if os.path.exists(deltatmp):
             os.unlink(deltatmp)
           rmtree(tdir)
@@ -4034,7 +4034,7 @@ def do_delta_and_test(old_File, new_File, delta, forensicfile):
                 os.unlink(deltatmp)
             if not  s.retriable :
               open(delta+'-fails','w').close()
-          except KeyboardInterrupt:
+          except (KeyboardInterrupt, SystemExit):
             if os.path.exists(deltatmp):
               os.unlink(deltatmp)
             raise
