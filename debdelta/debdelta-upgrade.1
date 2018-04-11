@@ -40,6 +40,7 @@ it is a comma separated list of (abbreviations of)
     error =  the delta fails to apply in the client
     tiny = the new package is small (the server ignores such packages)
     fail = the server failed to create the delta
+    queued = the delta is queued to be made in the server
     unavailable = all other cases
     after = continue downloading debs after patching has ended
   default is s,b,e,t,f
@@ -121,9 +122,12 @@ will refuse to apply corrupted or unsigned deltas (but, see option
 downloads deltas in two passes: in the first pass, it downloads the
 first kB of each delta, to extract the delta parameters and
 to examine them. If the delta does not exist, it checks
-if the 
+existence of flag timestamps in the remote server
+(such as
 .I debdelta-too-big
-timestamp file exists, and then it examines the
+.I debdelta-queued
+.I debdelta-failed
+), and then it examines the
 .I \-\-deb\-policy
 to decide if to download the deb instead.
 In the second pass, it downloads (the rest of) the 
@@ -148,10 +152,9 @@ to be buggy in some places
 "401"  into "404" , and "302" into "200")
 so the output explanation printed by
 .I debdelta-upgrade
-in case of download error may be wrong; and the
+in case of download error may be wrong; and most of the opetions for
 .I \-\-deb\-policy
-.I "big"
-is currently disabled (until the author understands 'urllib2'
+are currently disabled (until the author understands 'urllib2'
 better).
 
 .SH EXIT STATUS
