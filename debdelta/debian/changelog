@@ -1,3 +1,10 @@
+debdelta (0.61) unstable; urgency=medium
+
+  * support for control.tar.xz
+  * debdelta-upgrade: report if delta is queued in the server but not yet ready
+
+ -- A Mennucc1 <mennucc1@debian.org>  Wed, 11 Apr 2018 10:56:36 +0200
+
 debdelta (0.60) unstable; urgency=medium
 
   * better support for  httpredir.debian.org
