@@ -736,6 +736,26 @@ def die(s):
   assert type(s) in string_types
   raise DebDeltaError(s)
 
+class PopenPipe(object):
+  def __init__(self, a, **dictargs):
+    #special code for pipes http://docs.python.org/library/subprocess.html#replacing-shell-pipeline
+    old_stdin=dictargs.pop('stdin',None)
+    old_stdout=dictargs.pop('stdout',None)
+    self.pros=[]
+    while '|' in a:
+      l=a.index('|') ; a1=a[:l] ; a=a[l+1:]
+      p=subprocess.Popen(args=a1, stdin=old_stdin, stdout=subprocess.PIPE, **dictargs)
+      self.pros.append( p )
+      old_stdin=p.stdout
+    final_pro= subprocess.Popen(args=a, stdin=old_stdin, stdout=old_stdout, **dictargs)
+    for p in self.pros:
+      p.stdout.close()  # Allow p1 to receive a SIGPIPE if p2 exits.
+    self.pros.append(final_pro)
+  def wait(self):
+    for p in self.pros:
+      p.wait()
+    self.ret = max([ p.returncode for p in self.pros])
+    return self.ret
 
 def system(a,TD,saveargs=None,ignore_output=False,return_output=False):
   "a must be a tuple, TD the temporary directory ; if return_output , it will return (stdout,stderr,exitcode) regardless"
@@ -748,22 +768,8 @@ def system(a,TD,saveargs=None,ignore_output=False,return_output=False):
   (temp_err_fd, temp_err_name) = tempfile.mkstemp(prefix="debdelta_err_system")
   
   if VERBOSE > 3 : print '   system(',a,')=',
-  #special code for pipes http://docs.python.org/library/subprocess.html#replacing-shell-pipeline
-  old_stdin=open(os.devnull)
-  pros=[]
-  while '|' in a:
-    l=a.index('|') ; a1=a[:l] ; a=a[l+1:]
-    p=subprocess.Popen(args=a1, stdin=old_stdin, stdout=subprocess.PIPE, stderr=temp_err_fd, cwd=TD, close_fds=True)
-    pros.append( p )
-    old_stdin=p.stdout
-  final_pro= subprocess.Popen(args=a, stdin=old_stdin, stdout=temp_fd, stderr=temp_err_fd, cwd=TD, close_fds=True)
-  for p in pros:
-    p.stdout.close()  # Allow p1 to receive a SIGPIPE if p2 exits.
-  pros.append(final_pro)
-  for p in pros:
-    p.wait()
-  ret = max([ p.returncode for p in pros])
-  
+  MPP=PopenPipe(a,stdin=open(os.devnull), stdout=temp_fd, stderr=temp_err_fd, cwd=TD, close_fds=True)
+  ret=MPP.wait()
   os.close(temp_fd)
   os.close(temp_err_fd)
   if VERBOSE > 3 : print ret
