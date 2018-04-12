@@ -751,11 +751,25 @@ class PopenPipe(object):
     for p in self.pros:
       p.stdout.close()  # Allow p1 to receive a SIGPIPE if p2 exits.
     self.pros.append(final_pro)
+    #
+    self.ret=None
+    self.stdout=old_stdout
+    self.stdin=old_stdin
+    self.read=getattr(self.pros[-1].stdout,'read',None)
+    self.write=getattr(self.pros[0].stdin,'write',None)
   def wait(self):
     for p in self.pros:
       p.wait()
     self.ret = max([ p.returncode for p in self.pros])
     return self.ret
+  def terminate(self):
+    self.pros[0].poll()
+    if self.pros[0].returncode is None:
+      self.pros[0].terminate()
+  def close(self):
+    self.terminate()
+    self.wait()
+
 
 def system(a,TD,saveargs=None,ignore_output=False,return_output=False):
   "a must be a tuple, TD the temporary directory ; if return_output , it will return (stdout,stderr,exitcode) regardless"
