@@ -378,7 +378,7 @@ class SQL_queue:
     
     def queue_peek(self):
         conn,cursor = self._get_connection_cursor()
-        cursor.execute('SELECT * FROM deltas_queue ORDER BY priority ')
+        cursor.execute('SELECT * FROM deltas_queue ORDER BY priority , ctime  LIMIT 1')
         return cursor.fetchone()
     
     def queue_get(self, id_):
@@ -393,7 +393,7 @@ class SQL_queue:
         try:
             #cursor.executescript('begin deferred transaction')
             if id_ == None:
-                cursor.execute('SELECT * FROM deltas_queue ORDER BY priority ')
+                cursor.execute('SELECT * FROM deltas_queue ORDER BY priority , ctime LIMIT 1 ')
             else:
                 cursor.execute('SELECT * FROM deltas_queue WHERE id = ? ', (id_,))
             x=cursor.fetchone()
