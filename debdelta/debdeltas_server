@@ -305,6 +305,9 @@ class SQL_queue:
     ctime integer
     ) ;
     CREATE INDEX IF NOT EXISTS deltas_queue_priority ON deltas_queue ( priority );
+    CREATE INDEX IF NOT EXISTS deltas_queue_delta ON deltas_queue ( delta ) ;
+    CREATE INDEX IF NOT EXISTS deltas_queue_ctime ON deltas_queue ( ctime ) ;
+    CREATE INDEX IF NOT EXISTS deltas_queue_priority_ctime ON deltas_queue ( priority, ctime ) ;
     """
 
     def __init__(self,dbname):
