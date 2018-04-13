@@ -878,7 +878,7 @@ def _worker_creates_deltas(exit_when_queue_empty=False):
                 created=[]
                 last_publishing = time.time()
             else:
-                time.sleep(1)
+                time.sleep(0.0001)
     
     publish(publisher)
 
