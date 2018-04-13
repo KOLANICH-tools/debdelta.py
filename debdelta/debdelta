@@ -757,14 +757,20 @@ class PopenPipe(object):
     self.stdin=old_stdin
     self.read=getattr(self.pros[-1].stdout,'read',None)
     self.write=getattr(self.pros[0].stdin,'write',None)
-  def wait(self):
-    for p in self.pros:
-      p.wait()
+  def __set_returncode(self):
     if any([ (p.returncode<0) for p in self.pros]):
       self.returncode = min([ p.returncode for p in self.pros])
     else:
       self.returncode = max([ p.returncode for p in self.pros])
     return self.returncode
+  def poll(self):
+    for p in self.pros:
+      p.poll()
+    return self.__set_returncode()
+  def wait(self):
+    for p in self.pros:
+      p.wait()
+    return self.__set_returncode()
   def terminate(self):
     self.pros[0].poll()
     if self.pros[0].returncode is None:
