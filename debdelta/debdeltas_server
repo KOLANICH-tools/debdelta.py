@@ -505,7 +505,7 @@ def backup_Packages():
     tmpdir=tempfile.mkdtemp(dir=backup_Packages_dir)
     try:
         logger.debug('start')
-        with lockfile.FileLock(backup_Packages_lockname):
+        with lockfile.FileLock(backup_Packages_lockname,timeout=lock_timeout):
             _backup_Packages(now, tmpdir)
         logger.debug('end')
     except Exception, e:
@@ -752,7 +752,7 @@ class Compute_Priority(object):
 
 scan_backups_queue_deltas_lockname=join(lock_dir,'scan_backups_queue_deltas')
 def scan_backups_queue_deltas(bPd=backup_Packages_dir):
-    with lockfile.FileLock(scan_backups_queue_deltas_lockname):
+    with lockfile.FileLock(scan_backups_queue_deltas_lockname,timeout=lock_timeout):
         logger.debug('start')
         _scan_backups_queue_deltas(bPd)
         logger.debug('end')
@@ -820,7 +820,7 @@ def create_one_delta():
 
 worker_creates_deltas_lockname=join(lock_dir,'worker_creates_deltas')
 def worker_creates_deltas(exit_when_queue_empty=False):
-    with lockfile.FileLock(worker_creates_deltas_lockname) as L:
+    with lockfile.FileLock(worker_creates_deltas_lockname, timeout=lock_timeout) as L:
         logger.debug('start , EQE=%r' % exit_when_queue_empty)
         open(L.path,'w').write(pickle.dumps({'exit_when_queue_empty':exit_when_queue_empty}))
         _worker_creates_deltas(exit_when_queue_empty=exit_when_queue_empty)
