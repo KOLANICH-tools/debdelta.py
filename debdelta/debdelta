@@ -2756,7 +2756,9 @@ def do_delta_(olddeb,newdeb,delta,TD,forensic_file=None):
       a=f.read(10)
       f.close()
     elif type(n) in (FunctionType,LambdaType):
-      a=n().read(10)
+      f=n()
+      a=f.read(10)
+      if isinstance(f,PopenPipe): f.close()
     else:
       a=n.read(10)
     if a[:3] != '\037\213\010' :
@@ -2865,6 +2867,7 @@ def do_delta_(olddeb,newdeb,delta,TD,forensic_file=None):
     z=tempfile.NamedTemporaryFile(suffix='.gz',delete=False)
     shutil.copyfileobj(o,z)
     z.flush()
+    if isinstance(o,PopenPipe): o.close()
     pack_list,orig_name=h
     pack_list.reverse()
     cmd_list=[(['gzip','-nc'],l) for l in pack_list]
@@ -2913,6 +2916,7 @@ def do_delta_(olddeb,newdeb,delta,TD,forensic_file=None):
     #unfortunately 'xz --list' does not work on pipes!
     shutil.copyfileobj(o,z)
     z.flush()
+    if isinstance(o,PopenPipe): o.close()
     b=subprocess.Popen(['xz','-vv','--robot','--list',z.name],stdout=subprocess.PIPE)
     for a in b.stdout:
       a=a.rstrip('\n')
@@ -3465,15 +3469,15 @@ def do_delta_(olddeb,newdeb,delta,TD,forensic_file=None):
     assert oldnew in ('OLD','NEW')
     if p==None:
       p=os.path.splitext(name)[1]
-    db={'.gz':'gzip -cd', '.bz2': 'bzip2 -cd', '.lzma':'unlzma -c', '.xz':'unxz -c', \
-        '.tar':None}
-    assert p==False or p in db
+    db={'.gz' : ['gzip','-cd'], '.bz2': ['bzip2','-cd'],
+        '.lzma':['unlzma','-c'], '.xz': ['unxz','-c'] }
+    assert p==False or p == '.tar' or p in db 
     if p=='.tar' or p==False:
       def x():
-        return my_popen_read('cd '+TD+'; ar p %s.file %s '% (oldnew, name,))
+        return PopenPipe(['ar','p', oldnew+'.file', name] , stdout=subprocess.PIPE, cwd=TD)
     else:
       def x():
-        return my_popen_read('cd '+TD+'; ar p %s.file %s | %s' % (oldnew, name,db[p]))
+        return PopenPipe(['ar','p', oldnew+'.file', name,'|']+db[p] , stdout=subprocess.PIPE, cwd=TD)
     return x
   
   for name in ar_list_new :
