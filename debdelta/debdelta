@@ -752,7 +752,7 @@ class PopenPipe(object):
       p.stdout.close()  # Allow p1 to receive a SIGPIPE if p2 exits.
     self.pros.append(final_pro)
     #
-    self.ret=None
+    self.returncode=None
     self.stdout=old_stdout
     self.stdin=old_stdin
     self.read=getattr(self.pros[-1].stdout,'read',None)
@@ -760,8 +760,11 @@ class PopenPipe(object):
   def wait(self):
     for p in self.pros:
       p.wait()
-    self.ret = max([ p.returncode for p in self.pros])
-    return self.ret
+    if any([ (p.returncode<0) for p in self.pros]):
+      self.returncode = min([ p.returncode for p in self.pros])
+    else:
+      self.returncode = max([ p.returncode for p in self.pros])
+    return self.returncode
   def terminate(self):
     self.pros[0].poll()
     if self.pros[0].returncode is None:
