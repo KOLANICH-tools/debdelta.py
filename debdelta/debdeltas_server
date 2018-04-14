@@ -841,11 +841,11 @@ def _worker_creates_deltas(exit_when_queue_empty=False):
                 break
         except dbapi.OperationalError, e:
             logger.exception(' sqlite3 OperationalError ')
-        if x == None: #queue is empty, or error
-            time.sleep(60)
-        else:
+        if True:
             now=int(time.time())
-            if x[E.ctime] < (now - max_queue_age * 24 * 3600):
+            if x == None: #queue is empty, or error
+                time.sleep(60)
+            elif x[E.ctime] < (now - max_queue_age * 24 * 3600):
                 logger.debug('queue item too old %r' ,  x[E.delta] )
             elif not os.path.isfile(x[E.old_name]):
                 logger.warn('missing old deb %r for %r' ,   x[E.old_name], x[E.delta])
@@ -873,7 +873,7 @@ def _worker_creates_deltas(exit_when_queue_empty=False):
                     break
                 except Exception, e:
                     logger.exception('while do_delta_and_test')
-            if os.path.exists(x[E.delta]+'-queued'):
+            if x and os.path.exists(x[E.delta]+'-queued'):
                 os.unlink(x[E.delta]+'-queued')
             if (created and last_publishing > publisher_interval + time.time()) or \
                len(created) > publisher_flush_deltas :
