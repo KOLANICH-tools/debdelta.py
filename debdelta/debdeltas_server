@@ -875,7 +875,7 @@ def _worker_creates_deltas(exit_when_queue_empty=False):
                     logger.exception('while do_delta_and_test')
             if x and os.path.exists(x[E.delta]+'-queued'):
                 os.unlink(x[E.delta]+'-queued')
-            if (created and last_publishing > publisher_interval + time.time()) or \
+            if (created and time.time() > publisher_interval + last_publishing) or \
                len(created) > publisher_flush_deltas :
                 publish(publisher, created)
                 created=[]
