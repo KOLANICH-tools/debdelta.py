@@ -822,9 +822,10 @@ worker_creates_deltas_lockname=join(lock_dir,'worker_creates_deltas')
 def worker_creates_deltas(exit_when_queue_empty=False):
     with lockfile.FileLock(worker_creates_deltas_lockname, timeout=lock_timeout) as L:
         logger.debug('start , EQE=%r' % exit_when_queue_empty)
-        open(L.path,'w').write(pickle.dumps({'exit_when_queue_empty':exit_when_queue_empty}))
+        open(L.path,'w').write(pickle.dumps({'exit_when_queue_empty':exit_when_queue_empty,'pid':os.getpid()}))
         _worker_creates_deltas(exit_when_queue_empty=exit_when_queue_empty)
         logger.debug('end')
+        if os.path.exists(L.path): os.unlink(L.path)
 
 def _worker_creates_deltas(exit_when_queue_empty=False):
     set_environ_gpg_agent()
