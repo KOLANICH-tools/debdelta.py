@@ -34,11 +34,18 @@ Possible commands:
 import os, sys, atexit, tempfile, subprocess
 from os.path import join
 from copy import copy
+import time, string, shutil, pickle, lockfile, logging, logging.handlers
 
 try:
     import daemon
 except ImportError:
     daemon=None
+
+try:
+    import debian.deb822 
+    debian_deb822 = debian.deb822
+except ImportError:
+    debian_deb822 = None
 
 if len(sys.argv) <= 2:
     print __doc__
@@ -135,10 +142,6 @@ if DO_MAIL:
         os.dup2(temp_out.fileno(),2)
         atexit.register(send_temp_out_as_mail,temp_out)
 
-###
-
-import time, string, shutil, pickle, lockfile, logging, logging.handlers
-
 
 ###
 #http://stackoverflow.com/questions/36932/how-can-i-represent-an-enum-in-python
@@ -150,14 +153,6 @@ class Enum(object):
 def enum(*enums):
     d=dict([ (enums[k],k)    for k in range(len(enums)) ])
     return type('Enum', (object,), d)
-
-###
-
-try:
-    import debian.deb822 
-    debian_deb822 = debian.deb822
-except ImportError:
-    debian_deb822 = None
 
 
 #####
