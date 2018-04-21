@@ -398,8 +398,8 @@ else:
       raise DebDeltaError,'Internal error! refuse to  '+c
     try:
       cmd(a)
-    except OSError,s:
-      print ' Warning! when trying to ',repr(c),'got OSError',repr(str(s))
+    except OSError:
+      logger.exception(' Warning! when trying to '+repr(c)+' got OSError ')
       raise
 
   def unlink(a):
@@ -419,8 +419,8 @@ def freespace(w):
   try:
     a=os.statvfs(w)
     freespace= long(a[0]) * long(a[4])
-  except Exception, s:
-    print 'Statvfs error:', str(s)
+  except Exception:
+    logger.exception('Statvfs error on %r', w)
     freespace=None
   return freespace
 
@@ -549,8 +549,8 @@ class cache_sequence(object):
     except EOFError:
       self.cache=None
       raise StopIteration
-    except Exception, e:
-      print 'Cache file is broken (%r), deleting %r' % (e, self.cache_filename)
+    except Exception:
+      logger.exception('Cache file is broken, deleting %r' %  self.cache_filename)
       if ACT: os.unlink(self.cache_filename)
       self.cache=None
       self.broken=True
@@ -572,8 +572,8 @@ class cache_sequence(object):
           self.cache_file.close()
           self.cache_file=None
           os.rename(self.cache_filename+'~tmp~', self.cache_filename)
-      except Exception,e:
-        print 'Cannot close the cache file %r: %r' %  (self.cache_filename,e)
+      except Exception:
+        logger.exception('Cannot close the cache file %r' %  self.cache_filename)
         self.broken=True
   
   __del__=close
@@ -586,8 +586,8 @@ class cache_sequence(object):
     self.__prepare_for_write__()   
     try:
       self.cache.write(pickle.dumps(s))
-    except Exception,e:
-      print 'Cannot write to cache file (%r), deleting %r' % (e, self.cache_filename)
+    except Exception:
+      logger.exception('Cannot write to cache file, deleting %r', self.cache_filename)
       self.close()
       if ACT: os.unlink(self.cache_filename)
       self.broken=True
@@ -4314,8 +4314,8 @@ class Predictor:
       d['LocalDeltaTime']=t
       try:
         self.package_stats[n]=d
-      except Exception,exc:
-        print 'ERROR:Cannot update package_stats:',exc
+      except Exception:
+        logger.exception('ERROR:Cannot update package_stats')
 
     if self.upgrade_stats == None :
       return
