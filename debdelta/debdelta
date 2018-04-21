@@ -247,9 +247,9 @@ elif os.path.dirname(sys.argv[0]) == '/usr/lib/apt/methods' :
 else:
   action=(os.path.basename(sys.argv[0]))[3:]
   actions =  ('delta','patch','deltas','delta-upgrade', 'patch-url')
-  
+  #
   if action not in actions:
-    print 'wrong filename: should be "deb" + '+repr(actions)
+    sys.stderr.write('wrong filename: should be "deb" + '+repr(actions))
     raise SystemExit(4)
 
   __doc__ = doc[action] + doc_common
@@ -277,27 +277,27 @@ else:
     elif o == '--clean-deltas' : CLEAN_DELTAS = True
     elif o == '--clean-alt' :
       CLEAN_ALT = True 
-      print 'Warning, currently --clean-alt does nothing.'
+      sys.stderr.write('Warning, currently --clean-alt does nothing.\n')
     elif o == '--needsold' :  NEEDSOLD = True
     elif o == '--delta-algo': USE_DELTA_ALGO=v
     elif o == '--max-percent': MAX_DELTA_PERCENT=int(v)
     elif o == '--deb-policy' : DEB_POLICY = [j[0] for j in v.split(',') if j]
     elif o == '--timeout' :
       if int(v) < 0:
-        print 'Error: "--timeout ',int(v),'" is too small.'
+        sys.stderr.write('Error: --timeout '+v+' is too small.\n')
         raise SystemExit(3)
       TIMEOUT = int(v)
     elif o == '-M' :
       if int(v) <= 1:
-        print 'Error: "-M ',int(v),'" is too small.'
+        sys.stderr.write('Error: "-M '+v+'" is too small.\n')
         raise SystemExit(3)
       if int(v) <= 12:
-        print 'Warning: "-M ',int(v),'" is quite small.'
+        sys.stderr.write('Warning: "-M '+v+'" is quite small.\n')
       MAXMEMORY = 1024 * 1024 * int(v)
     elif o == '-n' :
       N_DELTAS = int(v)
       if N_DELTAS < 0:
-        print 'Error: -n ',v,' is negative.'
+        sys.stderr.write('Error: -n value is negative.\n')
         raise SystemExit(3) 
     elif o == '--test' and action == 'deltas' : DO_TEST = True
     elif o == '--info' and action == 'patch' : INFO = True
@@ -323,10 +323,10 @@ else:
         try:
           import poster
         except:
-          print 'To use the http forensic, you must install the package "python-poster".'
+          sys.stderr.write('To use the http forensic, you must install the package "python-poster".\n')
           raise SystemExit(3)
       if FORENSIC[:4] in ('mutt','mail') and not os.path.exists('/usr/bin/mutt'):
-        print 'To use this forensic, you must install the package "mutt".'
+        sys.stderr.write('To use this forensic, you must install the package "mutt".\n')
         raise SystemExit(3)
     elif o == '--alt'  :
       if not (os.path.isfile(v)  or  os.path.isdir(v)) :
@@ -339,7 +339,7 @@ else:
         raise SystemExit(3)
       OLD.append(v)
     elif o ==  '--help' or o ==  '-h':
-      print __doc__
+      sys.stderr.write(__doc__)
       raise SystemExit(0)
     elif (o ==  '--disable-feature') and action in ("delta", "deltas"):
       DISABLED_FEATURES += v.split(',')
@@ -351,7 +351,7 @@ else:
     elif (o ==  '--gpg-home'):
       GPG_HOME=abspath(expanduser(v))
       if not os.path.isdir(GPG_HOME):
-        print _("Error: --gpg-home `%s' does not exist.") % GPG_HOME
+        sys.stderr.write(_("Error: --gpg-home `%s' does not exist.") % GPG_HOME)
         raise SystemExit(3)
     elif o ==  '--format' :  # maybe, and action in ("delta-upgrade", "patch"):
       if v not in DEB_FORMAT_LIST:
@@ -374,7 +374,7 @@ try:
                  stdout.read().split(':')[-1])
 except:
   if VERBOSE:
-    print ' Warning, /proc not mounted, using bogus BOGOMIPS'
+    sys.stderr.write(' Warning, /proc not mounted, using bogus BOGOMIPS\n')
   BOGOMIPS=3000.0
 
 SP=subprocess.Popen(['hostname','-f'], shell=False, stdout=subprocess.PIPE)
