@@ -124,7 +124,13 @@ minibzip2='/usr/lib/debdelta/minibzip2'
 
 ####################################################################
 
-import sys , os , tempfile , string ,getopt , tarfile , shutil , time, traceback, ConfigParser, subprocess, time, tarfile, stat, hashlib, random, gzip
+import sys , os , tempfile , string ,getopt , tarfile , shutil , time, traceback, subprocess, time, tarfile, stat, hashlib, random, gzip
+
+try:
+  import ConfigParser
+except ImportError:
+  import configparser
+
 
 try:
     import debian.deb822 
@@ -132,7 +138,10 @@ try:
 except ImportError:
     debian_deb822 = None
 
-import cPickle as pickle
+try:
+  import cPickle as pickle
+except ImportError:
+  import pickle
 
 from stat    import ST_SIZE, ST_MTIME, ST_MODE, S_IMODE, S_IRUSR, S_IWUSR, S_IXUSR 
 from os.path import abspath, expanduser
