@@ -1327,7 +1327,7 @@ def stat_to_tar(name):
             gname = None
 
     #07777 is used in tarfile.TarInfo.tobuf
-    return  name.lstrip('/'), stmd & 07777, tartype, uid, gid, uname, gname, data
+    return  name.lstrip('/'), stmd & 0o7777, tartype, uid, gid, uname, gname, data
 
 
 def tarinfo_to_ls(tartype,tarmode):
@@ -3206,9 +3206,9 @@ def do_delta_(olddeb,newdeb,delta,TD,forensic_file=None):
       #just curious to know
       t=newtarinfo.type
       a=newtarinfo.mode
-      if VERBOSE and (( t == '2' and a  != 0777 ) or \
-                      ( t == '0' and ( (a & 0400 ) == 0 )) or \
-                      ( t == '5' and ( (a & 0500 ) == 0 ))):
+      if VERBOSE and (( t == '2' and a  != 0o777 ) or \
+                      ( t == '0' and ( (a & 0o400 ) == 0 )) or \
+                      ( t == '5' and ( (a & 0o500 ) == 0 ))):
         logger.debug(' weird permission %r %r %r', newname, oct(a), repr(newtarinfo.type))
       ###
       if   not newtarinfo.isreg():
@@ -4495,7 +4495,7 @@ def delta_upgrade_(args):
     #fcntl64(17, F_SETFD, FD_CLOEXEC)        = 0
     #fcntl64(17, F_SETLK, {type=F_WRLCK, whence=SEEK_SET, start=0, len=0}) = 0
     ##so
-    a=os.open(DEB_DIR+'/lock', os.O_RDWR | os.O_TRUNC | os.O_CREAT, 0640)
+    a=os.open(DEB_DIR+'/lock', os.O_RDWR | os.O_TRUNC | os.O_CREAT, 0o640)
     fcntl.fcntl(a, fcntl.F_SETFD, fcntl.FD_CLOEXEC)
     # synopsis lockf(   fd, operation, [length, [start, [whence]]])
     fcntl.lockf(a, fcntl.LOCK_EX | fcntl.LOCK_NB, 0,0,0)
