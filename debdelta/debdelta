@@ -200,7 +200,7 @@ OLD     = []
 ACT     = True
 DO_MD5  = True
 DEB_POLICY = ['b','s','e','t','f','q']
-DO_PROGRESS = terminalcolumns != None
+DO_PROGRESS = terminalcolumns != None and  __name__ == '__main__'
 
 #where/how debpatch/debdelta-upgrade will send forensic data, when patching fails
 #possible values:
