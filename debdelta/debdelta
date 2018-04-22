@@ -22,7 +22,8 @@ try:
   gettext.bindtextdomain('debdelta','/usr/share/locale')
   gettext.textdomain('debdelta')
   _ = gettext.gettext
-except Exception,a:
+except Exception:
+  a=sys.exc_info[1]
   sys.stderr.write('Could not initialize "gettext", translations will be unavailable\n'+str(a))
   def _(x): return x
 
@@ -264,7 +265,8 @@ else:
                  ('help','info','needsold','dir=','no-act','alt=','old=','delta-algo=',
                     'max-percent=','deb-policy=','clean-deltas','clean-alt','no-md5','debug','forensicdir=','forensic=',
                     'signing-key=', "accept-unsigned", "gpg-home=", "disable-feature=", "test", "format=", "cache", "timeout=") )
-  except getopt.GetoptError,a:
+  except getopt.GetoptError:
+      a=sys.exc_info()[1]
       sys.stderr.write(sys.argv[0] +': '+ str(a)+'\n')
       raise SystemExit(3)
 
@@ -395,7 +397,7 @@ else:
   def __wrap__(a,cmd):
     c=cmd.__name__+"("+a+")"
     if a[ : len(TMPDIR)+9 ] != TMPDIR+'/debdelta' :
-      raise DebDeltaError,'Internal error! refuse to  '+c
+      raise DebDeltaError('Internal error! refuse to  '+c)
     try:
       cmd(a)
     except OSError:
@@ -826,7 +828,8 @@ def system(a,TD,saveargs=None,ignore_output=False,return_output=False):
             s=s+'\n saved argument '+l+' in '+T
           else:
             s=s+'\n did not find argument '+l
-    except OSError,o:
+    except OSError:
+      o=sys.exc_info()[1]
       s=s+'\n    (there was an additional OSError "'+str(o)+'" when trying to save arguments)'
     die(s)
 
@@ -3297,7 +3300,8 @@ def do_delta_(olddeb,newdeb,delta,TD,forensic_file=None):
       while a:
         try:
           mega_cat.write(a)
-        except OSError,s :
+        except OSError:
+          s=sys.exc_info()[1]
           raise DebDeltaError(' OSError (at _a_) while writing: '+str(s), True)
         a=f.read(1024)
       f.close()
@@ -3323,7 +3327,8 @@ def do_delta_(olddeb,newdeb,delta,TD,forensic_file=None):
         assert(len(s))
         try:
           of.write(s)
-        except OSError,s :
+        except OSError:
+          s=sys.exc_info()[1]
           raise DebDeltaError(' OSError (at MCK) while writing: '+str(s), True)
       f.close()
       of.close()
@@ -4022,7 +4027,8 @@ def do_delta_and_test(old_File, new_File, delta, forensicfile):
             os.unlink(deltatmp)
           rmtree(tdir)
           raise
-        except DebDeltaError,s:
+        except DebDeltaError:
+          s=sys.exc_info()[1]
           if not VERBOSE : logger.info(_('Creating:')+' '+repr(delta))
           logger.info(' Creation of delta failed, reason: %r', s)
           if os.path.exists(deltatmp):
@@ -4062,7 +4068,8 @@ def do_delta_and_test(old_File, new_File, delta, forensicfile):
           try:
             #test, ignoring gpg, that is added later on
             pret=do_patch(deltatmp,old_File,None , info=info_delta, do_gpg=None)
-          except DebDeltaError,s:
+          except DebDeltaError:
+            s=sys.exc_info()[1]
             logger.warn(' '+_('Error: testing of delta failed:')+' '+str(s))
             if os.path.exists(deltatmp):
               if KEEP:
@@ -4075,7 +4082,8 @@ def do_delta_and_test(old_File, new_File, delta, forensicfile):
             if os.path.exists(deltatmp):
               os.unlink(deltatmp)
             raise
-          except Exception,s:
+          except Exception:
+            s=sys.exc_info()[1]
             exitstatus=max(exitstatus,4)
             puke(" *** Error while testing delta  "+delta,s)
             if os.path.exists(deltatmp):
@@ -4329,7 +4337,7 @@ class Predictor:
         r=   float(p['ServerBogomips']) / BOGOMIPS
       try:
         self.upgrade_stats[s]={ 'PatchSpeedRatio' : r }
-      except Exception,exc:
+      except Exception:
         logger.exception('ERROR:Cannot update upgrade_stats')
 
     if 'PatchTime' not in p:
@@ -4343,7 +4351,7 @@ class Predictor:
     a['PatchSpeedRatio'] = nr
     try:
       self.upgrade_stats[s]=a
-    except Exception,exc:
+    except Exception:
       logger.exception('ERROR:Cannot update upgrade_stats')
     if VERBOSE > 1 :
       logger.debug('  Upstream %r PatchSpeedRatio from %r to %r , %r', ut, r, nr, self.upgrade_stats[s]['PatchSpeedRatio'])
@@ -4479,7 +4487,8 @@ def delta_upgrade_(args):
     fcntl.fcntl(a, fcntl.F_SETFD, fcntl.FD_CLOEXEC)
     # synopsis lockf(   fd, operation, [length, [start, [whence]]])
     fcntl.lockf(a, fcntl.LOCK_EX | fcntl.LOCK_NB, 0,0,0)
-  except IOError, s:
+  except IOError:
+    s=sys.exc_info()[1]
     from errno import EAGAIN
     if s.errno == EAGAIN :
       a=' already locked!'
@@ -4543,7 +4552,8 @@ def delta_upgrade_(args):
             thread.interrupt_main()
             rmtree(TD)
             return
-          except DebDeltaError,s:
+          except DebDeltaError:
+            s=sys.exc_info()[1]
             puke(' Error: applying of delta for '+name+' failed: ',s)
             if 'e' in DEB_POLICY:
               no_delta.append( (deb_uri, newdeb) )
@@ -4644,7 +4654,8 @@ def delta_upgrade_(args):
         conn.request("GET", urllib2.quote(uri_p[2]),headers=headers)
         r = conn.getresponse()
         return r, r.status, r.reason, r.msg
-      except (httplib.HTTPException, socket.error),e:
+      except (httplib.HTTPException, socket.error):
+        e=sys.exc_info()[1]
         if VERBOSE : puke( ' Connection error (retrying): ',uri_p[1])
         conn_close(uri)
         try:
@@ -4652,7 +4663,8 @@ def delta_upgrade_(args):
           conn.request("GET", urllib2.quote(uri_p[2]),headers=headers)
           r = conn.getresponse()
           return r, r.status, r.reason, r.msg
-        except (httplib.HTTPException, socket.error),e:
+        except (httplib.HTTPException, socket.error):
+          e=sys.exc_info()[1]
           puke( 'Connection error (fatal): ',uri_p[1])
           mainexitcodes.append(1)
           try:
@@ -4670,9 +4682,11 @@ def delta_upgrade_(args):
         r = urllib2.urlopen(req)
         #print r.info(),dir(r),r.code
         return r, getattr(r,'code',None), getattr(r,'msg','(no message)'), r.info()
-      except urllib2.HTTPError,e:
+      except urllib2.HTTPError:
+        e=sys.exc_info()[1]
         return e.code, None, None, None
-      except (httplib.HTTPException,socket.error,urllib2.URLError),e:
+      except (httplib.HTTPException,socket.error,urllib2.URLError):
+        e=sys.exc_info()[1]
         puke( 'Connection error (fatal)',uri)
         mainexitcodes.append(1)
         return e, None, None, None
@@ -4802,7 +4816,8 @@ def delta_upgrade_(args):
         out=open(outnametemp,'a')
         try:
           a,b,total_len =_parse_ContentRange(responseheaders['Content-Range'])
-        except (KeyError,ValueError),e:
+        except (KeyError,ValueError):
+          e=sys.exc_info()[1]
           logger.warn('! problem, http response [206], Content Range %s , error %s , uri %s\n' %\
                            (responseheaders.get('Content-Range'),e,uri))
           return
@@ -5046,7 +5061,8 @@ def delta_upgrade_(args):
       #parse file and save info
       try:
         s=get_info_fast(tempname)
-      except DebDeltaError,e:
+      except DebDeltaError:
+        e=sys.exc_info()[1]
         logger.error("!!"+str(e)+'\n')
         logger.error("!! (renamed to "+tempname+'~~NOT~A~DELTA~~  )\n')
         os.rename(tempname,tempname+'~~NOT~A~DELTA~~')
@@ -5234,10 +5250,12 @@ if action == 'patch':
     except KeyboardInterrupt:
         puke('debpatch exited by keyboard interrupt')
         raise SystemExit(5)
-    except DebDeltaError,s:
+    except DebDeltaError:
+        s=sys.exc_info()[1]
         puke('debpatch',s)
         raise SystemExit(s.exitcode)
-    except Exception,s:
+    except Exception:
+        s=sys.exc_info()[1]
         puke("debpatch",s)
         raise SystemExit(4)
     raise SystemExit(0)
@@ -5255,12 +5273,14 @@ if action == 'patch':
   except KeyboardInterrupt:
     puke('debpatch exited by keyboard interrupt')
     raise SystemExit(5)
-  except DebDeltaError,s:
+  except DebDeltaError:
+    s=sys.exc_info()[1]
     puke('debpatch',s)
     if s.logs:
       forensic_send([s.logs])
     raise SystemExit(s.exitcode)
-  except Exception,s:
+  except Exception:
+    s=sys.exc_info()[1]
     puke('debpatch',s)
     raise SystemExit(4)
   raise SystemExit(0)
@@ -5276,10 +5296,12 @@ elif action == 'delta' :
   except KeyboardInterrupt:
     puke('debdelta exited by keyboard interrupt')
     raise SystemExit(5)
-  except DebDeltaError,s:
+  except DebDeltaError:
+    s=sys.exc_info()[1]
     puke('debdelta',s)
     raise SystemExit(s.exitcode)
-  except Exception, s:
+  except Exception:
+    s=sys.exc_info()[1]
     puke('debdelta',s)
     raise SystemExit(4)
   raise SystemExit(0)
@@ -5294,10 +5316,12 @@ elif action == 'deltas' :
   except KeyboardInterrupt:
     puke('debdeltas exited by keyboard interrupt')
     raise SystemExit(5)
-  except DebDeltaError,s:
+  except DebDeltaError:
+    s=sys.exc_info()[1]
     puke('debdeltas',s)
     raise SystemExit(s.exitcode)
-  except Exception,s:
+  except Exception:
+    s=sys.exc_info()[1]
     puke('debdeltas',s)
     raise SystemExit(4)
   raise SystemExit(exitcode)
@@ -5310,10 +5334,12 @@ elif action == 'delta-upgrade':
   except KeyboardInterrupt:
     puke('debdelta-upgrade exited due to keyboard interrupt')
     raise SystemExit(5)
-  except DebDeltaError,s:
+  except DebDeltaError:
+    s=sys.exc_info()[1]
     puke('debdelta-upgrade',s)
     raise SystemExit(s.exitcode)
-  except Exception, s:
+  except Exception:
+    s=sys.exc_info()[1]
     puke('debdelta-upgrade',s)
     raise SystemExit(4)
   raise SystemExit(exitcode)
