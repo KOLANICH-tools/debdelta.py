@@ -50,6 +50,11 @@ except ImportError:
 logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.INFO)
 logger=logging.getLogger(__name__) # this will be changed later on
 
+if sys.version_info.major == 2:
+    string_types = (str, unicode)  # python2
+else:
+    string_types = (str, bytes)  # python3
+
 if len(sys.argv) <= 2:
     sys.stderr.write(__doc__)
     sys.exit(0)
@@ -310,7 +315,7 @@ class SQL_queue:
     def __init__(self,dbname):
         if dbapi == None:
             raise RuntimeError('please install python-pysqlite2')
-        assert type(dbname) in (str, unicode)
+        assert type(dbname) in string_types
         if not os.path.exists(dbname):
             r=my_subprocess_Popen(['sqlite3',dbname], stdin=subprocess.PIPE)
             r.stdin.write(self.schema)

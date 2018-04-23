@@ -977,7 +977,7 @@ def _verify_signature_no_gpg(signature, DIR, role):
   #compute signatures
   hashes = _compute_hashes_db_(dir_list, DIR)
   #scan hashes file (GPG already verified)
-  if type(signature) in (str,unicode):
+  if type(signature) in string_types:
     f=open(signature) 
   elif hasattr(signature,'readline'):
     f=signature
@@ -1429,7 +1429,7 @@ def tar_those(f):
     if type(z) in (list,tuple):
       for j in z:
         tar.add(j,arcname=os.path.basename(j))
-    elif type(z) in (str,unicode):
+    elif type(z) in string_types:
       tar.add(z,arcname=os.path.basename(z))
     else: DebDeltaError(' internal error m92ksy')
   tar.close()
@@ -2776,7 +2776,7 @@ def do_delta_(olddeb,newdeb,delta,TD,forensic_file=None):
   
   def parse_gzip_header(n):
     " n may be a file name, a function returning a stream, or a stream"
-    if type(n) in (str, unicode):
+    if type(n) in string_types:
       f=open(TD+n)
       a=f.read(10)
       f.close()
@@ -2887,7 +2887,7 @@ def do_delta_(olddeb,newdeb,delta,TD,forensic_file=None):
       return False
     if type(o) in (FunctionType,LambdaType):
       o=o()
-    elif type(o) in (str,unicode):
+    elif type(o) in string_types:
       o=open(o)
     z=tempfile.NamedTemporaryFile(suffix='.gz',delete=False)
     shutil.copyfileobj(o,z)
@@ -2935,7 +2935,7 @@ def do_delta_(olddeb,newdeb,delta,TD,forensic_file=None):
     thread=''
     if type(o) in (FunctionType,LambdaType):
       o=o()
-    elif type(o) in (str,unicode):
+    elif type(o) in string_types:
       o=open(o)
     z=tempfile.NamedTemporaryFile(suffix='.xz',delete=False)
     #unfortunately 'xz --list' does not work on pipes!
