@@ -269,10 +269,7 @@ def my_subprocess_Popen(cmd, **kwargs):
 
 ######
 
-try:
-    from pysqlite2 import dbapi2 as dbapi
-except ImportError:
-    dbapi = None
+import sqlite3 as dbapi
 
 if dbapi != None:
     pass
@@ -313,8 +310,6 @@ class SQL_queue:
     """
 
     def __init__(self,dbname):
-        if dbapi == None:
-            raise RuntimeError('please install python-pysqlite2')
         assert type(dbname) in string_types
         if not os.path.exists(dbname):
             r=my_subprocess_Popen(['sqlite3',dbname], stdin=subprocess.PIPE)
