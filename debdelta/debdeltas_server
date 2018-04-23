@@ -505,8 +505,8 @@ def backup_Packages():
         with lockfile.FileLock(backup_Packages_lockname,timeout=lock_timeout):
             _backup_Packages(now, tmpdir)
         logger.debug('end')
-    except Exception, e:
-        logger.exception('')
+    except Exception:
+        logger.exception('(rm temporaries and reraise exception)')
         if os.path.isdir(tmpdir):
             logger.warn('on exception, deleting tmp dir %r ', tmpdir)
             shutil.rmtree(tmpdir)
@@ -838,7 +838,7 @@ def _worker_creates_deltas(exit_when_queue_empty=False):
             if x==None and exit_when_queue_empty:
                 logger.info('queue empty, exiting')
                 break
-        except dbapi.OperationalError, e:
+        except dbapi.OperationalError:
             logger.exception(' sqlite3 OperationalError ')
         if True:
             now=int(time.time())
@@ -866,11 +866,11 @@ def _worker_creates_deltas(exit_when_queue_empty=False):
                     else:
                         logger.warn('failed %r' , repr(x[E.delta]))
                         # FIXME REQUEUE if r == 1 , in case recreate timestamp
-                except SystemExit, e:
+                except SystemExit:
                     # python-daemon will raise this on sigterm
-                    logger.warning('while do_delta_and_test , SystemExit : '+str(e))
+                    logger.warning('while do_delta_and_test , SystemExit')
                     break
-                except Exception, e:
+                except Exception:
                     logger.exception('while do_delta_and_test')
             if x and os.path.exists(x[E.delta]+'-queued'):
                 os.unlink(x[E.delta]+'-queued')
@@ -953,7 +953,7 @@ def daemonize_maybe_mail(cmdname, cmd, *args, **kw):
             except SystemExit:
                 logger.warn('SystemExit from '+cmdname+' , output in '+out.name)
                 raise
-            except Exception, e:
+            except Exception:
                 logger.exception(cmdname+'--daemonized')
                 logger.warn('output was left in '+out.name)
                 raise
@@ -979,7 +979,7 @@ def daemonize_maybe_mail(cmdname, cmd, *args, **kw):
     
     except SystemExit:
         raise
-    except Exception, e:
+    except Exception:
         logger.exception(cmdname)
 
 def start_gpg_agent():
