@@ -4005,13 +4005,17 @@ def iter_deltas_one_pack_arch(pa,ar,info_pack,thedir,theforensicdir,VersionCompa
 
 
 def do_delta_and_test(old_File, new_File, delta, forensicfile):
-        " return codes : see EXIT STATUS in 'man debdelta' "
+        " returns (error_code, delta_elaps, patch_elaps, info_delta) : for error_code, see EXIT STATUS in 'man debdelta' "
         exitstatus=0
         if VERBOSE : logger.info('Creating: %r',delta)
         
         deltatmp=delta+'_tmp_'
         ret= None
         tdir=tempo()
+        ret = None # data returned from calls
+        elaps = None # delta time
+        p_elaps = None # patching time
+        info_delta = [] # informations about created delta
         
         deltadirname=os.path.dirname(delta)
         if not os.path.exists(deltadirname): #FIXME this does not respect --no-act
@@ -4021,7 +4025,7 @@ def do_delta_and_test(old_File, new_File, delta, forensicfile):
         newdebsize=os.path.getsize(new_File)
         if free and (free < (newdebsize /2 + 2**15)) :
           if VERBOSE : logger.warn(' '+(_("Not enough disk space for storing `%s'.")), delta)
-          return 1
+          return (1, None, None, [])
         
         if forensicfile and  not os.path.exists(forensicfile):
           forensicdirname=os.path.dirname(forensicfile)
@@ -4063,7 +4067,7 @@ def do_delta_and_test(old_File, new_File, delta, forensicfile):
         rmtree(tdir)
 
         if ret == None:
-          return exitstatus
+          return (exitstatus, elaps, p_elaps, info_delta)
         
         info_delta.append('ServerID: '+HOSTID)
         info_delta.append('ServerBogomips: '+str(BOGOMIPS))
@@ -4072,8 +4076,8 @@ def do_delta_and_test(old_File, new_File, delta, forensicfile):
             os.unlink(deltatmp)
             if VERBOSE : logger.info(' Warning, too big!')
             open(delta+'-too-big','w').close()
-            return exitstatus
-        
+            return (exitstatus, elaps, p_elaps, info_delta)
+        #
         if DO_TEST :
           ##patch test
           pret=None
@@ -4105,7 +4109,7 @@ def do_delta_and_test(old_File, new_File, delta, forensicfile):
                 os.unlink(deltatmp)
             open(delta+'-fails','w').close()
           if pret == None:
-            return max(exitstatus, 4)
+            return (max(exitstatus, 4), elaps, p_elaps, info_delta)
           
           (newdeb_,p_elaps)=pret
           info_delta.append('PatchTime: %.2f' % p_elaps)
@@ -4125,9 +4129,9 @@ def do_delta_and_test(old_File, new_File, delta, forensicfile):
         #eventually, put in its place
         if os.path.isfile(deltatmp):
           os.rename(deltatmp,delta)
-          return exitstatus
+          return (exitstatus, elaps, p_elaps, info_delta)
         else:
-          return max(exitstatus, 4)
+          return (max(exitstatus, 4), elaps, p_elaps, info_delta)
 
         
 def init_apt_return_VersionCompare():
@@ -4283,7 +4287,7 @@ def do_deltas(debs):
           logger.info('Would create: %r',delta)
         else:
           e=do_delta_and_test(old['File'], new['File'], delta, forensicfile)
-          exitstatus=max(exitstatus,e)
+          exitstatus=max(exitstatus,e[0])
 
   if VERBOSE : logger.info(' '+ ( _('Total running time: %.1f')),( -start_time + time.time()))
   return exitstatus

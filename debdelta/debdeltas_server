@@ -809,7 +809,8 @@ def create_one_delta():
     elif os.path.isfile(x[E.delta]):
         logger.info('already exists, skipped', x[E.delta])
     else:
-        if 0 < debdelta.do_delta_and_test(* (x[2:6])): # <- skip id and priority
+        ret = debdelta.do_delta_and_test(* (x[2:6])) # <- skip id and priority
+        if 0 < ret[0]: 
             logger.warn('failed %r',  x[E.delta] )
             #FIXME, REQUE
 
@@ -855,8 +856,8 @@ def _worker_creates_deltas(exit_when_queue_empty=False):
                 logger.info('tried, it failed, delta %r' ,  x[E.delta])
             else:
                 try:
-                    r=debdelta.do_delta_and_test(* (x[2:6]))
-                    if  0 == r:
+                    ret=debdelta.do_delta_and_test(* (x[2:6]))
+                    if  0 == ret[0]:
                         logger.info('created %r' , repr(x[E.delta]))
                         if os.path.exists(x[E.delta]): # do not append if the delta was too big
                             created.append(x[E.delta])
