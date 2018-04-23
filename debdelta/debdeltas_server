@@ -164,6 +164,8 @@ def enum(*enums):
 
 #####
 
+import deltas_history
+
 import debdelta
 
 #### configuration 
@@ -831,6 +833,10 @@ def _worker_creates_deltas(exit_when_queue_empty=False):
     last_publishing=time.time()
     thesqldb=SQL_queue(sqlite3_queue)
     E=thesqldb.fields_enum
+    if sqlite3_history:
+        thesqlhistory=deltas_history.SQL_history(sqlite3_history)
+    else:
+        thesqlhistory=None
     while True:
         x=None
         try:
@@ -841,6 +847,7 @@ def _worker_creates_deltas(exit_when_queue_empty=False):
         except dbapi.OperationalError:
             logger.exception(' sqlite3 OperationalError ')
         if True:
+            ret = None
             now=int(time.time())
             if x == None: #queue is empty, or error
                 time.sleep(60)
@@ -874,6 +881,26 @@ def _worker_creates_deltas(exit_when_queue_empty=False):
                     logger.exception('while do_delta_and_test')
             if x and os.path.exists(x[E.delta]+'-queued'):
                 os.unlink(x[E.delta]+'-queued')
+            if x and ret and thesqlhistory:
+                try:
+                    (error_code, delta_elaps, patch_elaps, info_delta, error_string) = ret
+                    info_delta_db = debdelta.info_2_db(info_delta)
+                    thesqlhistory.add(None, # it is difficult to recover the distribution here
+                                      info_delta_db.get('OLD/Package'),
+                                      info_delta_db.get('OLD/Architecture'),
+                                      info_delta_db.get('OLD/Version'),
+                                      info_delta_db.get('NEW/Version'),
+                                      os.path.getsize(x[E.old_name]) if x[E.old_name] else None,
+                                      os.path.getsize(x[E.new_name]) if x[E.new_name] else None,
+                                      x[E.delta][len(deltas_www_dir)+1:] if x[E.delta] else None,
+                                      os.path.getsize(x[E.delta]) if x[E.delta] and os.path.exists(x[E.delta]) else None,
+                                      delta_elaps, patch_elaps,
+                                      x[E.forensic][len(forensic_www_dir)+1:] if x[E.forensic] and os.path.exists(x[E.delta]) else None,
+                                      error_string)
+                except (SystemExit, KeyboardInterrupt):
+                    raise
+                except:
+                    logger.exception('error while adding to history')
             if (created and time.time() > publisher_interval + last_publishing) or \
                len(created) > publisher_flush_deltas :
                 publish(publisher, created)
