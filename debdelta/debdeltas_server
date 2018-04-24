@@ -908,11 +908,17 @@ def _worker_creates_deltas(exit_when_queue_empty=False):
                 last_publishing = time.time()
             else:
                 time.sleep(0.0001)
-    
+    #
     publish(publisher)
 
 
 def publish(publisher, created=[]):
+    try:
+        if sqlite3_history and sqlite3_history_html:
+            logger.debug('updating %r', sqlite3_history_html)
+            deltas_history.html_one_day(sqlite3_history, sqlite3_history_html)
+    except: 
+        logger.exception('error while creating %r' , sqlite3_history_html)    
     if publisher:
         if os.path.isfile(publisher):
             now=time.time()
