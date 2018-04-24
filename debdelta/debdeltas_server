@@ -47,7 +47,7 @@ try:
 except ImportError:
     debian_deb822 = None
 
-logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.INFO)
+logging.basicConfig(format='%(levelname)-9s: %(message)s', level=logging.INFO)
 logger=logging.getLogger(__name__) # this will be changed later on
 
 if sys.version_info.major == 2:
