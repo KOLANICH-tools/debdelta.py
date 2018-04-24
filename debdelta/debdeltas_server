@@ -883,7 +883,7 @@ def _worker_creates_deltas(exit_when_queue_empty=False):
                 os.unlink(x[E.delta]+'-queued')
             if x and ret and thesqlhistory:
                 try:
-                    (error_code, delta_elaps, patch_elaps, info_delta, error_string) = ret
+                    (error_code, delta_size, delta_elaps, patch_elaps, info_delta, error_string) = ret
                     info_delta_db = debdelta.info_2_db(info_delta)
                     thesqlhistory.add(None, # it is difficult to recover the distribution here
                                       info_delta_db.get('OLD/Package'),
@@ -893,7 +893,7 @@ def _worker_creates_deltas(exit_when_queue_empty=False):
                                       os.path.getsize(x[E.old_name]) if x[E.old_name] else None,
                                       os.path.getsize(x[E.new_name]) if x[E.new_name] else None,
                                       x[E.delta][len(deltas_www_dir)+1:] if x[E.delta] else None,
-                                      os.path.getsize(x[E.delta]) if x[E.delta] and os.path.exists(x[E.delta]) else None,
+                                      delta_size,
                                       delta_elaps, patch_elaps,
                                       x[E.forensic][len(forensic_www_dir)+1:] if x[E.forensic] and os.path.exists(x[E.delta]) else None,
                                       error_string)
