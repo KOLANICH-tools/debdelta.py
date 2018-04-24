@@ -3,7 +3,7 @@
 #Copyright (c) 2018 A. Mennucci
 #License: GNU GPL v2 
 
-import os, sys, atexit, tempfile, subprocess
+import os, sys, atexit, tempfile, subprocess, urllib2
 from os.path import join
 from copy import copy
 import time, string, shutil, pickle, lockfile, logging, logging.handlers
@@ -81,9 +81,69 @@ class SQL_history(object):
                                     (distribution, package, architecture, old_version, new_version,
                                      old_size, new_size, delta, delta_size,delta_time,patch_time,
                                      forensic, error, ctime))
+    def iterate_since(self, since):
+        "returns a cursor onto the database since 'since' (in seconds from epoch)"
+        cursor = self.sql_connection.cursor()
+        cursor.execute('SELECT * FROM deltas_history WHERE ctime > ? ORDER BY ctime DESC ', (since,))
+        return cursor
+
+
+_html_top="""<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <link rel="StyleSheet" href="style.css" type="text/css">
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <title>debdeltas Server History Page</title>
+</head>
+<body>
+"""
+
+def html_one_day(db,W):
+    s=SQL_history(db)
+    if type(W) in string_types:
+        W=open(W,'w').write
+    W(_html_top)
+    since=int(time.time()) - 24 * 3600
+    W('Deltas created from '+time.ctime(since)+' to '+time.ctime()+'\n')
+    F=list(SQL_history.fields)
+    FE=SQL_history.fields_enum
+    F[FE.architecture]='arch'
+    del F[FE.forensic]
+    F.insert(FE.delta_time,'percent')
+    del F[FE.distribution]
+    W('<table class="one_day_work"><tr>')
+    for j in F:
+        W('<th>' + j.replace('_',' ')+'</th>')
+    W('</tr>\n')
+    count=0
+    for x in s.iterate_since(since):
+        count+=1
+        x=list(x)
+        if x[FE.delta]:
+            x[FE.delta]='<a href="/%s">delta</a>' % urllib2.quote(x[FE.delta])
+        if x[FE.new_size] and x[FE.delta_size] :
+            percent=('%.1f%%' % (100. * x[FE.delta_size] / x[FE.new_size]) )
+        else: percent='--'
+        x[FE.ctime]=time.ctime(x[FE.ctime])
+        del x[FE.forensic]
+        x.insert(FE.delta_time,percent)
+        del x[FE.distribution]
+        x=[('%.3f' % j) if isinstance(j,float) else j for j in x]
+        x=['' if (j == None) else j for j in x]
+        W('<tr>')
+        for j in x:
+            W('<td>'+str(j)+'</td>')
+        W('</tr>\n')
+        if (count % 40)  == 0:
+            W('<tr>')
+            for j in F:
+                W('<th>'+j.replace('_',' ')+'</th>')
+            W('</tr>\n')
+    W('</table></body></html>\n')
+
 
 if __name__ == '__main__' and len(sys.argv) > 1:
-    if sys.argv[1] == 'create' :
+    if sys.argv[1] == 'create_test' :
         n=tempfile.NamedTemporaryFile(delete=False,suffix='.sql')
         print('Creating test sqlite3 database: %r' % n.name)
         s=SQL_history(n.name)
@@ -97,4 +157,12 @@ if __name__ == '__main__' and len(sys.argv) > 1:
               '1.0','1.1','3400','3635',
               None,None,None,None,None,
               'too-big')
+    elif sys.argv[1] == 'dump_one_day' :
+        s=SQL_history(sys.argv[2])
+        for x in s.cursor_today()():
+            print(repr(x))
+    elif sys.argv[1] == 'html_one_day' :
+        W= sys.argv[3] if (len(sys.argv) > 3)  else sys.stdout.write
+        html_one_day(sys.argv[2],W)
+    else: raise ValueError('unknown command %r' % sys.argv[1])
 
