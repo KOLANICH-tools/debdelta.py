@@ -204,14 +204,13 @@ for d in mirrorsdir , backup_Packages_dir, deltas_www_dir,  forensic_www_dir:
 
 #http://stackoverflow.com/questions/14758299/python-logging-daemon-destroys-file-handle
 logger = logging.getLogger(__name__)
-#logger_hdlr = logging.handlers.TimedRotatingFileHandler(join(logs_dir,'debdeltas_server'),
-#                                          when='d', interval=1, backupCount=30,  utc=True)
 logger_hdlr = logging.handlers.RotatingFileHandler(join(logs_dir,'debdeltas_server'),maxBytes=2**24, backupCount=30)
 logger_formatter = logging.Formatter('%(asctime)s %(process)d %(levelname)s %(funcName)s %(message)s')
 logger_hdlr.setFormatter(logger_formatter)
 logger.addHandler(logger_hdlr)
 logger.setLevel(getattr(logging,logging_level))
-
+debdelta.logger.addHandler(logger_hdlr)
+debdelta.logger.setLevel(getattr(logging,logging_level))
 
 if DO_MAIL and temp_out :
         logger.debug('sendind stdout stderr to %r', temp_out.name)
