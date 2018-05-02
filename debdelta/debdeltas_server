@@ -433,6 +433,10 @@ def LiPa_find_extension(dirname, li):
       returns LiPa with correct extension, or None."""
     if len(li)==7: li=li[:6]
     assert len(li) == 6
+    if not os.path.isdir( join(dirname, *(li[:5])) ):
+        # some suites (e.g.  kfreebsd) do not contain some arches (e.g. amd64)
+        logger.warning("No directory for %r %r" ,  dirname, li)
+        return None
     a=join(*li)
     for e in ('.xz','.bz2','.gz',''):
         if os.path.isfile(join(dirname,a+e)):
@@ -468,7 +472,10 @@ def mirrors_binary_Packages(mirrorsdir=mirrorsdir,archs=architectures):
         for j in os.listdir(join(mirrorsdir,m,'dists')) :
             mj=join(mirrorsdir,m,'dists',j)
             if ( os.path.isdir(mj) and not os.path.islink(mj)):
-                distrib[m][j+magic] = {}
+                if (m,j) in codenames_exclude:
+                    logger.debug('Skipping %r in %r', j, m)
+                else:
+                    distrib[m][j+magic] = {}
                 #print 'dist',m,j,magic,mj
     # iterate to find binary package lists in distributions in mirrors
     for m in distrib:
