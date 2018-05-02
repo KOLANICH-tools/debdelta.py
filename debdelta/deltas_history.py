@@ -3,15 +3,18 @@
 #Copyright (c) 2018 A. Mennucci
 #License: GNU GPL v2 
 
-import os, sys, atexit, tempfile, subprocess, urllib2
+import os, sys, atexit, tempfile, subprocess
 from os.path import join
 from copy import copy
 import time, string, shutil, pickle, lockfile, logging, logging.handlers
 
 if sys.version_info.major == 2:
     string_types = (str, unicode)  # python2
+    from urllib import quote as urllib_quote
 else:
     string_types = (str, bytes)  # python3
+    import urllib, urllib.parse
+    from urllib.parse import quote as urllib_quote
 
 import sqlite3 as dbapi
 
@@ -120,7 +123,7 @@ def html_one_day(db,W):
         count+=1
         x=list(x)
         if x[FE.delta]:
-            x[FE.delta]='<a href="/%s">delta</a>' % urllib2.quote(x[FE.delta])
+            x[FE.delta]='<a href="/%s">delta</a>' % urllib_quote(x[FE.delta])
         if x[FE.new_size] and x[FE.delta_size] :
             percent=('%.1f%%' % (100. * x[FE.delta_size] / x[FE.new_size]) )
         else: percent='--'
