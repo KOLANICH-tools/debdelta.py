@@ -162,7 +162,8 @@ if __name__ == '__main__' and len(sys.argv) > 1:
               'too-big')
     elif sys.argv[1] == 'dump_one_day' :
         s=SQL_history(sys.argv[2])
-        for x in s.cursor_today()():
+        since=int(time.time()) - 24 * 3600
+        for x in s.iterate_since(since):
             print(repr(x))
     elif sys.argv[1] == 'html_one_day' :
         W= sys.argv[3] if (len(sys.argv) > 3)  else sys.stdout.write
