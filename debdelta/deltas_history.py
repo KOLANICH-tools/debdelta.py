@@ -153,8 +153,8 @@ if __name__ == '__main__' and len(sys.argv) > 1:
         print('Adding an entry in %r' % n.name)
         s.add('debian','pippo','amd64',
               '1.0','1.1','3400','3635',
-              '/tmp/pippo.delta',1200,4.4,1.3,
-              '/tmp/pippo.forensic')
+              '/tmp/pippo_2:3_2:4~1.delta',1200,4.4,1.3,
+              '/tmp/pippo_2:4~1.forensic')
         print('Adding a failed entry in %r' % n.name)
         s.add('debian','pippo','amd64',
               '1.0','1.1','3400','3635',
