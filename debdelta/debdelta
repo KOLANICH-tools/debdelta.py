@@ -2265,7 +2265,7 @@ def do_delta(olddeb,newdeb,delta):
     if T : rmtree(T)
   return r
 
-def do_delta_(olddeb,newdeb,delta,TD,forensic_file=None):
+def do_delta_(olddeb, newdeb, delta, TD, forensic_file=None, info=[]):
   """This function creates a delta. The delta is 'ar' archive (see 'man ar').
   The delta contains data, a script, and optional gpg signatures.
   The script recreates the new deb. Note that the deb is (again) an 'ar' archive,
@@ -2455,7 +2455,7 @@ def do_delta_(olddeb,newdeb,delta,TD,forensic_file=None):
   ####################### end of class Script ########################
   
   ##### unpack control.tar.gz, scan control, write  parameters
-  info=[]
+  #
   def info_append(s):
     "smart appending that avoids duplicate entries"
     if s not in info:
@@ -4038,7 +4038,7 @@ def do_delta_and_test(old_File, new_File, delta, forensicfile):
           forensic_file=None
         
         try:
-          ret=do_delta_(old_File,new_File, deltatmp, TD=tdir, forensic_file=forensic_file)
+          ret=do_delta_(old_File,new_File, deltatmp, TD=tdir, forensic_file=forensic_file, info=info_delta)
           (deltatmp_, percent, elaps, info_delta, gpg_hashes) = ret
           if os.path.exists(deltatmp):
             delta_size = os.path.getsize(deltatmp)
