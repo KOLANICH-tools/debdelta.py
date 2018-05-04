@@ -4222,7 +4222,7 @@ def do_deltas(debs):
       else: logger.error('Error! skipping file --old %r',arg)
     elif os.path.isdir(arg):
       # no // support yet
-      scan_deb_dir(arg, None, 'OLD', False, info_by_pack_arch)
+      scan_deb_dir(arg, None, 'OLD', False, info_by_pack_arch,info_by_file)
     else: logger.error('Error, ignored --old %r',arg)
   
   #scan cmdline arguments and prepare list of debs and deltas
