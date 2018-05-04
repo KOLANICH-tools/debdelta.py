@@ -528,7 +528,19 @@ def list_tar(f):
   p.close()
   return ar_list
 
-
+def untar_control_in_deb(ar_ls):
+  " ar_ls is usually list_ar(n) ; it returns  (c , b, z) \
+  where c 'name of control' , b 'option for tar' , z 'unzip command' "
+  c = None
+  for a in ar_ls :
+    if a[:12]=='control.tar.':
+      c=a
+  assert c
+  # command for tar
+  bdb={'.gz':'-z', '.bz2':'-j', '.lzma':'--lzma', '.xz':'-J'}
+  zdb={'.gz' : ['gzip','-cd'], '.bz2': ['bzip2','-cd'],
+      '.lzma':['unlzma','-c'], '.xz': ['unxz','-c'] }  
+  return c,  bdb.get(c[11:]), zdb.get(c[11:])
 
 class cache_sequence(object):
   cache_filename=None
