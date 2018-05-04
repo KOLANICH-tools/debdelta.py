@@ -772,8 +772,8 @@ class PopenPipe(object):
     self.pros.append(final_pro)
     #
     self.returncode=None
-    self.stdout=old_stdout
-    self.stdin=old_stdin
+    self.stdout=self.pros[-1].stdout
+    self.stdin=self.pros[0].stdin
     self.read=getattr(self.pros[-1].stdout,'read',None)
     self.write=getattr(self.pros[0].stdin,'write',None)
   def __set_returncode(self):
