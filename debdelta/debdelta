@@ -2902,19 +2902,14 @@ def do_delta_(olddeb, newdeb, delta, TD, forensic_file=None, info=[]):
       redo=True
       while redo and cmd_list:
         cmd,par=cmd_list.pop()
-        y=subprocess.Popen(['zcat',z.name],stdout=subprocess.PIPE)
         wcmd=copy(cmd)
         wcmd.append('-'+str(par))
         if VERBOSE > 2 : logger.debug('   Testing command %r',wcmd)
-        w=subprocess.Popen(wcmd,stdin=y.stdout,stdout=subprocess.PIPE,close_fds=True)
-        y.stdout.close()
+        w=PopenPipe(['zcat',z.name,'|']+wcmd+['|','cmp','-',z.name],\
+                    stdout=open(os.devnull,'w'),stderr=open(os.devnull,'w'),close_fds=True)
         redo=False
-        c=subprocess.Popen(['cmp','-',z.name],stdin=w.stdout,stdout=open(os.devnull,'w'),close_fds=True)
-        w.stdout.close()
-        c.wait()
-        #assert y.wait() == 0  <- when cmp fails, those get broken pipe
-        #assert w.wait() == 0
-        if c.returncode :
+        w.wait()
+        if w.returncode :
           redo=True
           if VERBOSE or DEBUG : logger.debug('  Tried gzip options but failed: %r',wcmd)
         elif VERBOSE > 2 : logger.debug('   Success with command %r',wcmd)
