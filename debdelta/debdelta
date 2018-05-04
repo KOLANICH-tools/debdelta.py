@@ -2968,7 +2968,6 @@ def do_delta_(olddeb, newdeb, delta, TD, forensic_file=None, info=[]):
       redo=True
       while redo and PARS:
         par=PARS.pop()
-        y=subprocess.Popen(['unxz','-c',z.name],stdout=subprocess.PIPE)
         w=['xz','-c']
         if par:
           w.append(par)
@@ -2978,14 +2977,11 @@ def do_delta_(olddeb, newdeb, delta, TD, forensic_file=None, info=[]):
           w.append(thread)
         w.append('-')
         if VERBOSE > 2 : logger.debug('   Testing XZ options %r',w)
-        w=subprocess.Popen(w,stdin=y.stdout,stdout=subprocess.PIPE,close_fds=True)
-        y.stdout.close()
         redo=False
-        c=subprocess.Popen(['cmp','-',z.name],stdin=w.stdout,stdout=open(os.devnull,'w'),close_fds=True)
-        w.stdout.close()
-        #assert y.wait() == 0  <- when cmp fails, those get broken pipe
-        #assert w.wait() == 0
-        if c.wait() :
+        c=PopenPipe(['unxz','-c',z.name,'|']+w+['|','cmp','-',z.name],\
+                    stdout=open(os.devnull,'w'),stderr=open(os.devnull,'w'),close_fds=True)
+        c.wait()
+        if c.returncode :
           redo=True
           if VERBOSE or DEBUG : logger.debug(' Tried XZ options but failed: %r %r %r',par,crc,thread)
         if redo and not PARS:
