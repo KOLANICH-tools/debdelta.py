@@ -3544,11 +3544,11 @@ def do_delta_(olddeb,newdeb,delta,TD,forensic_file=None):
         info_append('needs-xz')
         script.xz_parameters=guess_xz_parameters(xd)
         if script.xz_parameters==False:
-          raise DebDeltaError('Cannot guess XZ parameters')
+          raise DebDeltaError('Cannot guess XZ parameters for new %r' % name)
       elif '.gz' == ext :
         script.gz_command=guess_gz_command(xd)
         if script.gz_command==False:
-          raise DebDeltaError('Cannot guess GZ parameters')
+          raise DebDeltaError('Cannot guess GZ parameters for new %r' % name)
       del xd
       x=None
       for oldext in ('','.gz','.bz2','.lzma','.xz'):
