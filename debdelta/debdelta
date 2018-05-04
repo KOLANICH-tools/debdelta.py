@@ -1677,10 +1677,7 @@ def do_patch_(delta, olddeb, newdeb, TD, runtime,
       #unpack the old control structure, if available
       os.mkdir(TD+'/OLD/CONTROL')
       #unpack control.tar.gz
-      for a in ar_list_old :
-        if a[:12]=='control.tar.':
-          f=a
-      b={'.gz':'-z','.xz':'-J','.bz2':'-j'}.get(f[11:])
+      f,b,z = untar_control_in_deb(ar_list_old)
       system(('ar','p',TD+'OLD.file',f,'|','tar',b,'-xp','-f','-','-C',TD+'OLD/CONTROL'),TD)
   #then we check for the conformance
   if not os.path.isdir(olddeb) and 'OLD/Size' in params:
@@ -2183,13 +2180,16 @@ def do_patch_(delta, olddeb, newdeb, TD, runtime,
       else: logger.warn(' Warning! no MD5 was verified for %r',os.path.basename(newdeb or delta))
   elif this_deb_format == 'unzipped' :
     if DO_MD5:
-      m=compute_md5(subprocess.Popen('ar p "%s" control.tar.gz | zcat' % (TD+'NEW.file'),
-                                     stdout=subprocess.PIPE,shell=True).stdout)
+      c,b,z=untar_control_in_deb(list_ar(TD+'NEW.file'))
+      p=PopenPipe(['ar','p',(TD+'NEW.file'),c,'|']+z, stdout=subprocess.PIPE)
+      m=compute_md5(p.stdout)
+      p.wait()
       if params['NEW/control.tar'][:32] != m:
         f=fore()
         raise DebDeltaError('MD5 mismatch for control.tar' , logs=f)
-      m=compute_md5(subprocess.Popen('ar p "%s" data.tar' % (TD+'NEW.file'),
-                                     stdout=subprocess.PIPE,shell=True).stdout)
+      p=subprocess.Popen(['ar','p',(TD+'NEW.file'),'data.tar'], stdout=subprocess.PIPE)
+      m=compute_md5(p.stdout)
+      p.wait()
       if params['NEW/data.tar'][:32] != m:
         f=fore()
         raise DebDeltaError('MD5 mismatch for data.tar', logs=f)
@@ -3785,14 +3785,18 @@ def scan_deb_byfile(f, info_by_file):
       return info_by_file[f]
     a={}
     a['File']=f
-    p=my_popen_read('ar p "'+f+'" control.tar.gz | tar -x -z -f - -O ./control')
-    scan_control(p,params=a)
+    c,b,z = untar_control_in_deb( list_ar(f) )
+    p=PopenPipe(['ar','p',f,c,'|','tar',b,'-xp','-f','-','-O','./control'],
+                stdout = subprocess.PIPE)
+    scan_control(p.stdout, params=a)
     p.close()
     return a
 
 def scan_deb_bydict(a):
-    p=my_popen_read('ar p "'+a['File']+'" control.tar.gz | tar -x -z -f - -O ./control')
-    scan_control(p,params=a)
+    c,b,z = untar_control_in_deb( list_ar(a['File']) )
+    p=PopenPipe(['ar','p',a['File'],c,'|','tar',b,'-xp','-f','-','-O','./control'],
+                stdout = subprocess.PIPE)
+    scan_control(p.stdout, params=a)
     p.close()
     return a
 
