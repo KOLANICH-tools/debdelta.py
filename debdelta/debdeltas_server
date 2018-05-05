@@ -758,9 +758,9 @@ class Compute_Priority(object):
 scan_backups_queue_deltas_lockname=join(lock_dir,'scan_backups_queue_deltas')
 def scan_backups_queue_deltas(bPd=backup_Packages_dir):
     with lockfile.FileLock(scan_backups_queue_deltas_lockname,timeout=lock_timeout):
-        logger.debug('start')
+        logger.info('start')
         _scan_backups_queue_deltas(bPd)
-        logger.debug('end')
+        logger.info('end')
 
 def _scan_backups_queue_deltas(bPd=backup_Packages_dir):
     
