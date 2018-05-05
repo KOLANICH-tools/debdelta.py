@@ -902,7 +902,7 @@ def _worker_creates_deltas(exit_when_queue_empty=False):
                                       delta_size,
                                       delta_elaps, patch_elaps,
                                       x[E.forensic][len(forensic_www_dir)+1:] if x[E.forensic] and os.path.exists(x[E.delta]) else None,
-                                      error_string)
+                                      error_string, None, 1, os.getloadavg()[0])
                 except (SystemExit, KeyboardInterrupt):
                     raise
                 except:

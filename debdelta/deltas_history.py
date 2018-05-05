@@ -36,7 +36,7 @@ class SQL_history(object):
     fields=('id','distribution','package','architecture',
             'old_version','new_version','old_size','new_size',
             'delta','delta_size','delta_time','patch_time',
-            'forensic','error','ctime')
+            'forensic','error','ctime','n_threads','loadavg')
     fields_enum=enum(*fields)
 
     schema=b"""
@@ -45,7 +45,8 @@ class SQL_history(object):
     distribution text, package text, architecture text,
     old_version text, new_version text, old_size integer, new_size integer,
     delta text,    delta_size integer, delta_time real, patch_time real,
-    forensic text,    error text,    ctime integer
+    forensic text,    error text,    ctime integer,
+    n_threads integer, loadavg real
     ) ;
     CREATE INDEX IF NOT EXISTS deltas_history_package ON deltas_history ( package );
     CREATE INDEX IF NOT EXISTS deltas_history_old_version ON deltas_history ( old_version );
@@ -76,14 +77,14 @@ class SQL_history(object):
     def add(self, distribution, package, architecture,
             old_version, new_version, old_size, new_size, 
             delta, delta_size, delta_time, patch_time,
-            forensic, error=None, ctime=None):
+            forensic, error, ctime, n_threads, loadavg):
         if ctime==None:
             ctime=int(time.time())
         with self.sql_connection:
-            self.sql_connection.execute('INSERT INTO deltas_history VALUES (null, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',\
+            self.sql_connection.execute('INSERT INTO deltas_history VALUES (null, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',\
                                     (distribution, package, architecture, old_version, new_version,
                                      old_size, new_size, delta, delta_size,delta_time,patch_time,
-                                     forensic, error, ctime))
+                                     forensic, error, ctime, n_threads, loadavg))
     def iterate_since(self, since):
         "returns a cursor onto the database since 'since' (in seconds from epoch)"
         cursor = self.sql_connection.cursor()
@@ -154,12 +155,13 @@ if __name__ == '__main__' and len(sys.argv) > 1:
         s.add('debian','pippo','amd64',
               '1.0','1.1','3400','3635',
               '/tmp/pippo_2:3_2:4~1.delta',1200,4.4,1.3,
-              '/tmp/pippo_2:4~1.forensic')
+              '/tmp/pippo_2:4~1.forensic',
+              '', None, 1, 1.2)
         print('Adding a failed entry in %r' % n.name)
         s.add('debian','pippo','amd64',
               '1.0','1.1','3400','3635',
               None,None,None,None,None,
-              'too-big')
+              'too-big', None, 2, 3.4)
     elif sys.argv[1] == 'dump_one_day' :
         s=SQL_history(sys.argv[2])
         since=int(time.time()) - 24 * 3600
