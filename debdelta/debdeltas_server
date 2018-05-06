@@ -882,9 +882,16 @@ def _worker_creates_deltas(exit_when_queue_empty=False):
                 except (SystemExit, KeyboardInterrupt):
                     # python-daemon will raise this on sigterm
                     logger.warning('while do_delta_and_test , SystemExit or KeyboardInterrupt')
+                    try:
+                        if x: thesqldb.queue_add(x)
+                    except:
+                        logger.exception('while requeueing %r', x)
                     break
                 except Exception:
-                    logger.exception('while do_delta_and_test')
+                    logger.exception('while do_delta_and_test on %r', x)
+                    # do not reque
+                    if x and os.path.exists(x[E.delta]+'-queued'):
+                        os.unlink(x[E.delta]+'-queued')
             if x and os.path.exists(x[E.delta]+'-queued'):
                 os.unlink(x[E.delta]+'-queued')
             if x and ret and thesqlhistory:
