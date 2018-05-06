@@ -879,9 +879,9 @@ def _worker_creates_deltas(exit_when_queue_empty=False):
                     else:
                         logger.warn('failed %r' , repr(x[E.delta]))
                         # FIXME REQUEUE if r == 1 , in case recreate timestamp
-                except SystemExit:
+                except (SystemExit, KeyboardInterrupt):
                     # python-daemon will raise this on sigterm
-                    logger.warning('while do_delta_and_test , SystemExit')
+                    logger.warning('while do_delta_and_test , SystemExit or KeyboardInterrupt')
                     break
                 except Exception:
                     logger.exception('while do_delta_and_test')
