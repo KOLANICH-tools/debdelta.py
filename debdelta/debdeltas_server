@@ -670,7 +670,7 @@ def iter_backups_for_deltas(bPd=backup_Packages_dir):
     current_distrib=mirrors_binary_Packages(join(bPd,lb[0]))
     for p in iterate_Packages_in_dict_of_mirrors(current_distrib):
         latest=(lb[0], p)
-        logger.debug('now working on %r %r',lb[0],p)
+        logger.info('now working on %r %r',lb[0],p)
         latest_filename=join(bPd,lb[0],LiPa_to_filename(p))
         visited_inodes=[stat_inode(latest_filename)]
         older=[]
@@ -704,7 +704,7 @@ def iter_backups_for_deltas(bPd=backup_Packages_dir):
             for b in (lb[0],): #currently we add only the most recent one
                 a=LiPa_find_extension(join(bPd,b),q)
                 if a:
-                    logger.debug('and on as well %r %r',b,a)
+                    logger.info('and on as well %r %r',b,a)
                     older.append((b,a))
                 else:
                     logger.warn(' missing  %r %r',b,q)
@@ -727,7 +727,7 @@ def iter_backups_for_deltas(bPd=backup_Packages_dir):
                               forensic_www_dir+'//', VersionCompare):
                     count += 1
                     yield z
-            logger.debug(' yielded %d',count)
+            logger.info(' yielded %d',count)
         else:
             logger.debug(' no older to create list of deltas for %r',latest)
 
