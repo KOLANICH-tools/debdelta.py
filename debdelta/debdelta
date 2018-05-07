@@ -2088,7 +2088,7 @@ def do_patch_(delta, olddeb, newdeb, TD, runtime,
       raise
   else: #progress reporting for deb_format != 'preunpacked'
     runtime['patchprogress']=12
-    if 'NEW/Size' in params:
+    if 'NEW/Size' in params and do_progress:
       NEW_size=int(params['NEW/Size'])
       while None == F.poll():
         if os.path.exists(TD+'NEW.file'):
