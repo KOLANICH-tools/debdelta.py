@@ -245,8 +245,9 @@ class LoggerWriter(object):
         self.prefix = prefix
 
     def write(self, message):
-        if message != '\n':
-            self.logger.log(self.level, self.prefix+message)
+        for a in message.split():
+            if a:
+                self.logger.log(self.level, self.prefix+repr(a))
             
     def close(self):
         return self.dupfile.close()
