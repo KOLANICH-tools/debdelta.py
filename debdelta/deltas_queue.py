@@ -82,7 +82,7 @@ class SQL_queue(object):
         self.sql_connection_add = None
     
     def _connect(self):
-        return dbapi.connect(self.dbname, isolation_level='DEFERRED')   # detect_types=dbapi.PARSE_DECLTYPES | dbapi.PARSE_COLNAMES)
+        return dbapi.connect(self.dbname, isolation_level='EXCLUSIVE')   # detect_types=dbapi.PARSE_DECLTYPES | dbapi.PARSE_COLNAMES)
     
     def __del__(self):
         if self.sql_connection != None:
@@ -127,7 +127,7 @@ class SQL_queue(object):
         #http://stackoverflow.com/questions/15856976/transactions-with-python-sqlite3
         connection, cursor = self._get_connection_cursor()
         try:
-            #cursor.executescript('begin deferred transaction')
+            cursor.execute('begin exclusive transaction')
             if id_ == None:
                 cursor.execute('SELECT * FROM deltas_queue ORDER BY priority , ctime LIMIT 1 ')
             else:
@@ -136,10 +136,12 @@ class SQL_queue(object):
             if x == None: #
                 return None
             id_ = x[0]
-            cursor.execute('DELETE FROM deltas_queue where id = ? ', (id_,))
-            connection.commit() #cursor.executescript('commit transaction')
+            connection.execute('DELETE FROM deltas_queue where id = ? ', (id_,))
+            connection.commit()
+            #cursor.execute('commit transaction')
         except:
-            connection.rollback() #cursor.executescript('rollback')
+            connection.rollback() 
+            #cursor.execute('rollback')
             raise
         return x
 
