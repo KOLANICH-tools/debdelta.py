@@ -47,7 +47,6 @@ class SQL_queue(object):
     dbname=None
     sql_connection=None
     sql_connection_add=None
-    cursor_add=None
     fields=('id','priority','old_name','new_name','delta','forensic','other_info','ctime')
     fields_enum=enum(*fields)
 
@@ -87,14 +86,11 @@ class SQL_queue(object):
         #
         # will be created when needed
         self.sql_connection_add = None
-        self.cursor_add = None
     
     def _connect(self):
         return dbapi.connect(self.dbname, isolation_level='DEFERRED')   # detect_types=dbapi.PARSE_DECLTYPES | dbapi.PARSE_COLNAMES)
     
     def __del__(self):
-        if self.cursor_add != None:
-            self.cursor_add.close()
         if self.sql_connection != None:
             self.sql_connection.close()
         if self.sql_connection_add != None:
@@ -106,32 +102,22 @@ class SQL_queue(object):
         return connection, cursor
     
     def queue_add_begin(self):
-        assert self.sql_connection_add == None and  self.cursor_add == None
+        assert self.sql_connection_add == None
         self.sql_connection_add = self._connect()
-        self.cursor_add = self.sql_connection_add.cursor()
-        #http://stackoverflow.com/questions/15856976/transactions-with-python-sqlite3
-        #damn broken DBAPI!
-        ## self.cursor_add.executescript('begin deferred transaction')
-    
+
     def queue_add(self, priority, old_name, new_name, delta, forensic, other_info='', ctime=None):
-        if self.cursor_add == None:
+        if self.sql_connection_add == None:
             raise Exception(' should use queue_add_begin() before ')
         if ctime==None:
             ctime=int(time.time())
-        self.cursor_add.execute('INSERT INTO deltas_queue VALUES (null, ?, ?, ?, ?, ?, ?, ?)',\
+        with self.sql_connection_add as S:
+            S.execute('INSERT INTO deltas_queue VALUES (null, ?, ?, ?, ?, ?, ?, ?)',\
                                     (priority, old_name, new_name, delta, forensic, other_info, ctime))
-    
+            S.commit()
+
     def queue_add_commit(self):
-        if self.cursor_add == None:
-            raise Exception(' should use queue_add_begin() before ')
-        self.sql_connection_add.commit()
         self.sql_connection_add = None
-        #http://stackoverflow.com/questions/15856976/transactions-with-python-sqlite3
-        #damn broken DBAPI!
-        ## self.cursor_add.execute('commit transaction')
-        self.cursor_add = None
-    
-    
+
     def queue_peek(self):
         conn,cursor = self._get_connection_cursor()
         cursor.execute('SELECT * FROM deltas_queue ORDER BY priority , ctime  LIMIT 1')
