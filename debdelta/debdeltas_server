@@ -174,7 +174,7 @@ def enum(*enums):
 #####
 
 import deltas_history
-
+import deltas_queue
 import debdelta
 
 #### configuration 
@@ -798,6 +798,12 @@ def publish(publisher, created=[]):
             deltas_history.html_one_day(sqlite3_history, sqlite3_history_html)
     except: 
         logger.exception('error while creating %r' , sqlite3_history_html)    
+    try:
+        if sqlite3_queue_html:
+            logger.debug('updating %r', sqlite3_queue_html)
+            deltas_queue.html(sqlite3_queue, sqlite3_queue_html)
+    except: 
+        logger.exception('error while creating %r' , sqlite3_queue_html)
     if publisher:
         if os.path.isfile(publisher):
             now=time.time()
