@@ -153,4 +153,59 @@ class SQL_queue(object):
             connection.rollback() #cursor.executescript('rollback')
             raise
         return x
+    
+    def iterate(self):
+        "returns a cursor onto the database"
+        connection, cursor = self._get_connection_cursor()
+        cursor.execute('SELECT * FROM deltas_queue ORDER BY priority , ctime')
+        return cursor
 
+
+_html_top="""<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <link rel="StyleSheet" href="style.css" type="text/css">
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <title>debdeltas Server History Page</title>
+</head>
+<body>
+"""
+
+def html(db,W):
+    s=SQL_queue(db)
+    if type(W) in string_types:
+        W=open(W,'w').write
+    W(_html_top)
+    W('Queue state at '+time.ctime()+'\n')
+    F=list(SQL_queue.fields)
+    FE=SQL_queue.fields_enum
+    W('<table class="queue"><tr>')
+    for j in F:
+        W('<th>' + j.replace('_',' ')+'</th>')
+    W('</tr>\n')
+    count=0
+    for x in s.iterate():
+        count+=1
+        x=list(x)
+        x=[('%.3f' % j) if isinstance(j,float) else j for j in x]
+        x=[(j.split('/')[-1]) if (type(j) in string_types) else j for j in x]
+        x=['' if (j == None) else j for j in x]
+        x[FE.ctime]=time.ctime(x[FE.ctime])
+        W('<tr>')
+        for j in x:
+            W('<td>'+str(j)+'</td>')
+        W('</tr>\n')
+        if (count % 40)  == 0:
+            W('<tr>')
+            for j in F:
+                W('<th>'+j.replace('_',' ')+'</th>')
+            W('</tr>\n')
+    W('</table></body></html>\n')
+    W('total %d elements in queue\n' % count)
+
+
+if __name__ == '__main__' and len(sys.argv) > 1:
+    if sys.argv[1] == 'html' :
+        W= sys.argv[3] if (len(sys.argv) > 3)  else sys.stdout.write
+        html(sys.argv[2],W)
+    else: raise ValueError('unknown command %r' % sys.argv[1])
