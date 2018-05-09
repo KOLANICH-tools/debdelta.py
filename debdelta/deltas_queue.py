@@ -77,13 +77,7 @@ class SQL_queue(object):
             assert 0 == r.returncode
         assert os.path.exists(dbname)
         self.dbname=dbname
-        #
-        #hack, FIXME: something is messing up with fd 4 when creating the delta,
-        #             and this haywires the sql connection
-        #             so we recreate it at each call
-        #self.sql_connection = self._connect()
-        self.sql_connection = None
-        #
+        self.sql_connection = self._connect()
         # will be created when needed
         self.sql_connection_add = None
     
@@ -97,7 +91,7 @@ class SQL_queue(object):
             self.sql_connection_add.close()
 
     def _get_connection_cursor(self):
-        connection =  self.sql_connection if (self.sql_connection != None) else  self._connect()
+        connection =  self.sql_connection
         cursor = connection.cursor()
         return connection, cursor
     
@@ -159,3 +153,4 @@ class SQL_queue(object):
             connection.rollback() #cursor.executescript('rollback')
             raise
         return x
+
