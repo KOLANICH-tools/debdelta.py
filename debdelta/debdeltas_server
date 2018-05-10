@@ -675,7 +675,7 @@ def set_environ_gpg_agent():
     else:
         logger.warn("configuration variable 'gpg_agent_info' set to a strange value: "+repr(gnupg_agent_info))
 
-def create_one_delta():
+def create_one_delta_simple():
     set_environ_gpg_agent()
     
     thesqldb=SQL_queue(sqlite3_queue)
@@ -1042,7 +1042,7 @@ elif args[0] == 'peek_queue':
     logger.info(thesqldb.queue_peek())
     
 elif args[0] == 'create_one_delta':
-    create_one_delta()
+    create_one_delta_simple()
     
 elif args[0] == 'daemonize_test':
     daemon_test('barfoo')
