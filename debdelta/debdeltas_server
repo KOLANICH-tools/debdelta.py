@@ -270,7 +270,7 @@ def my_subprocess_Popen(cmd, **kwargs):
 
 ######
 
-from deltas_queue import SQL_queue
+from deltas_queue import SQL_queue, dbapi
 
 ########  Packages files as tuples
 ## Packages files are often represented as lists, with 7 elements,
