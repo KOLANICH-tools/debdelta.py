@@ -700,6 +700,45 @@ def worker_creates_deltas(exit_when_queue_empty=False):
         logger.debug('end')
         if os.path.exists(L.path): os.unlink(L.path)
 
+
+
+def create_one_delta_from_queue(x, thesqldb):
+            ret = None
+            now=int(time.time())
+            E=thesqldb.fields_enum
+            if x[E.ctime] < (now - max_queue_age * 24 * 3600):
+                logger.debug('queue item too old %r' ,  x[E.delta] )
+            elif not os.path.isfile(x[E.old_name]):
+                logger.warn('missing old deb %r for %r' ,   x[E.old_name], x[E.delta])
+            elif not os.path.isfile(x[E.new_name]):
+                logger.warn('missing new deb %r for %r' ,  x[E.new_name], x[E.delta])
+            elif os.path.isfile(x[E.delta]):
+                logger.info('already available delta %r' ,  x[E.delta])
+            elif os.path.isfile(x[E.delta]+'-too-big'):
+                logger.info('tried, too big, delta %r' ,  x[E.delta])
+            elif os.path.isfile(x[E.delta]+'-fails'):
+                logger.info('tried, it failed, delta %r' ,  x[E.delta])
+            else:
+                try:
+                    ret=debdelta.do_delta_and_test(* (x[2:6]))
+                except (SystemExit, KeyboardInterrupt):
+                    # python-daemon will raise this on sigterm
+                    logger.warning('while do_delta_and_test , SystemExit or KeyboardInterrupt')
+                    try:
+                        if x: thesqldb.queue_add(*x)
+                    except:
+                        logger.exception('while requeueing %r', x)
+                    raise
+                except Exception:
+                    logger.exception('while do_delta_and_test on %r', x)
+                    # do not reque
+                    if x and os.path.exists(x[E.delta]+'-queued'):
+                        os.unlink(x[E.delta]+'-queued')
+            if x and os.path.exists(x[E.delta]+'-queued'):
+                os.unlink(x[E.delta]+'-queued')
+            return ret
+
+
 def _worker_creates_deltas(exit_when_queue_empty=False):
     set_environ_gpg_agent()
     created=[]
@@ -721,49 +760,23 @@ def _worker_creates_deltas(exit_when_queue_empty=False):
         except dbapi.OperationalError:
             logger.exception(' sqlite3 OperationalError ')
         if True:
-            ret = None
-            now=int(time.time())
             if x == None: #queue is empty, or error
                 time.sleep(60)
-            elif x[E.ctime] < (now - max_queue_age * 24 * 3600):
-                logger.debug('queue item too old %r' ,  x[E.delta] )
-            elif not os.path.isfile(x[E.old_name]):
-                logger.warn('missing old deb %r for %r' ,   x[E.old_name], x[E.delta])
-            elif not os.path.isfile(x[E.new_name]):
-                logger.warn('missing new deb %r for %r' ,  x[E.new_name], x[E.delta])
-            elif os.path.isfile(x[E.delta]):
-                logger.info('already available delta %r' ,  x[E.delta])
-            elif os.path.isfile(x[E.delta]+'-too-big'):
-                logger.info('tried, too big, delta %r' ,  x[E.delta])
-            elif os.path.isfile(x[E.delta]+'-fails'):
-                logger.info('tried, it failed, delta %r' ,  x[E.delta])
             else:
+                ret=None
                 try:
-                    ret=debdelta.do_delta_and_test(* (x[2:6]))
+                    ret = create_one_delta_from_queue(x, thesqldb)
+                except (SystemExit, KeyboardInterrupt):
+                    break
+                if ret:
                     if  0 == ret[0]:
                         logger.info('created %r' , repr(x[E.delta]))
                         if os.path.exists(x[E.delta]): # do not append if the delta was too big
                             created.append(x[E.delta])
+                        append_to_sql_history(x, ret, E, thesqlhistory)
                     else:
                         logger.warn('failed %r' , repr(x[E.delta]))
                         # FIXME REQUEUE if r == 1 , in case recreate timestamp
-                except (SystemExit, KeyboardInterrupt):
-                    # python-daemon will raise this on sigterm
-                    logger.warning('while do_delta_and_test , SystemExit or KeyboardInterrupt')
-                    try:
-                        if x: thesqldb.queue_add(x)
-                    except:
-                        logger.exception('while requeueing %r', x)
-                    break
-                except Exception:
-                    logger.exception('while do_delta_and_test on %r', x)
-                    # do not reque
-                    if x and os.path.exists(x[E.delta]+'-queued'):
-                        os.unlink(x[E.delta]+'-queued')
-            if x and os.path.exists(x[E.delta]+'-queued'):
-                os.unlink(x[E.delta]+'-queued')
-            if x and ret and thesqlhistory:
-                append_to_sql_history(x, ret, E, thesqlhistory)
             if (created and time.time() > publisher_interval + last_publishing) or \
                len(created) > publisher_flush_deltas :
                 update_html()
