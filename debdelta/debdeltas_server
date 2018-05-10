@@ -205,9 +205,10 @@ if not os.path.exists(lock_dir):
         logger.exception(' while creating %r',lock_dir)
         raise
 
-for d in mirrorsdir , backup_Packages_dir, deltas_www_dir,  forensic_www_dir:
+for d in mirrorsdir , backup_Packages_dir, deltas_www_dir,  forensic_www_dir, deltas_transit_dir:
     if not os.path.isdir(d) : # todo: or if cannot write there
         logger.critical('config variable is not a a directory :'+repr(d))
+        sys.exit(1)
 
 ######
 
