@@ -836,7 +836,7 @@ class Publisher(object):
             logger.warn(' does not exists: '+publisher)
     def wait(self):
             if not self.proc:
-                logger.warn(' publisher is not running')
+                # no use warning here ... logger.warn(' publisher is not running')
                 return
             p=self.proc
             p.wait()
