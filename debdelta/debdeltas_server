@@ -705,6 +705,7 @@ def _worker_creates_deltas(exit_when_queue_empty=False):
     last_publishing=time.time()
     thesqldb=SQL_queue(sqlite3_queue)
     E=thesqldb.fields_enum
+    publish=Publisher(publisher)
     if sqlite3_history:
         thesqlhistory=deltas_history.SQL_history(sqlite3_history)
     else:
@@ -783,14 +784,16 @@ def _worker_creates_deltas(exit_when_queue_empty=False):
             if (created and time.time() > publisher_interval + last_publishing) or \
                len(created) > publisher_flush_deltas :
                 update_html()
-                publish(publisher, created)
+                publish.start(created)
+                publish.wait()
                 created=[]
                 last_publishing = time.time()
             else:
                 time.sleep(0.0001)
     #
     update_html()
-    publish(publisher)
+    publish.start()
+    publish.wait()
 
 
 def update_html():
@@ -807,23 +810,44 @@ def update_html():
     except: 
         logger.exception('error while creating %r' , sqlite3_queue_html)
 
-def publish(publisher, created=[]):
-    if publisher:
+class Publisher(object):
+    def __init__(self, publisher):
+        self.publisher=publisher
+        self.proc=None
+        self.created=None
+        self.args=None
+        self.now=0
+    def start(self, created=[]):
+        if not self.publisher:
+            return
+        if self.proc:
+            logger.warn(' publisher is already running, cannot run twice')
+            return
         if os.path.isfile(publisher):
-            now=time.time()
-            args=[publisher, config_abspath]
+            self.now=time.time()
+            args=[self.publisher, config_abspath]
+            self.args=args
+            self.created=created
             p=my_subprocess_Popen(args+created)
-            p.wait()
-            if p.returncode:
-                logger.error('failed: exitstatus %r args %r deltas %r' , p, args, created)
-            else:
-                if created:
-                    logger.info(' sent %d deltas in %d seconds' , len(created), time.time()-now )
-                else:
-                    logger.info(' full sync in %d seconds'  ,  time.time()-now )
+            self.proc=p
+            return p
         else:
             logger.warn(' does not exists: '+publisher)
-
+    def wait(self):
+            if not self.proc:
+                logger.warn(' publisher is not running')
+                return
+            p=self.proc
+            p.wait()
+            if p.returncode:
+                logger.error('failed: exitstatus %r args %r deltas %r' , p.returncode, self.args, self.created)
+            else:
+                if self.created:
+                    logger.info(' sent %d deltas in %d seconds' , len(self.created), time.time()-self.now )
+                else:
+                    logger.info(' full sync in %d seconds'  ,  time.time()-self.now )
+            self.proc=None
+            return p.returncode
 
 def update_popcon():
     " prepare a cache in popcon_cache, a pickle of a dict where keys are names of packages, and values\
