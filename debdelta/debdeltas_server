@@ -798,7 +798,8 @@ def _worker_creates_deltas(exit_when_queue_empty=False):
     publish.wait()
 
 def move_from_transit_to_server():
-    p=subprocess.Popen(['find','-type','f'],cwd=deltas_transit_dir,stdout=subprocess.PIPE)
+    p=subprocess.Popen(['find','-type','f', '-not', '-name', '*_tmp_'],
+                       cwd=deltas_transit_dir,stdout=subprocess.PIPE)
     for j in p.stdout:
         j=j[:-1]
         delta=join(deltas_www_dir,j)
