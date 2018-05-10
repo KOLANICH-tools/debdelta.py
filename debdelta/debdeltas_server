@@ -25,6 +25,8 @@ Possible commands:
  update_popcon                     update cache of popularity contest
  
  peek_queue                      print the first item in the queue of deltas
+ 
+ publish                       update html stats, move stuff from transit to server
 """
 
 #Copyright (c) 2013 A. Mennucci
@@ -1080,6 +1082,13 @@ elif args[0] == 'daemonize_test':
     
 elif args[0] == 'start_gpg_agent':
     return_code=start_gpg_agent()
+    
+elif args[0] == 'publish':
+    publish=Publisher(publisher)
+    update_html()
+    move_from_transit_to_server()
+    publish.start()
+    publish.wait()    
     
 elif '--help' in args or '-h' in args:
     sys.stderr.write(__doc__)
