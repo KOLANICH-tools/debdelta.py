@@ -782,16 +782,18 @@ def _worker_creates_deltas(exit_when_queue_empty=False):
                     logger.exception('error while adding to history')
             if (created and time.time() > publisher_interval + last_publishing) or \
                len(created) > publisher_flush_deltas :
+                update_html()
                 publish(publisher, created)
                 created=[]
                 last_publishing = time.time()
             else:
                 time.sleep(0.0001)
     #
+    update_html()
     publish(publisher)
 
 
-def publish(publisher, created=[]):
+def update_html():
     try:
         if sqlite3_history and sqlite3_history_html:
             logger.debug('updating %r', sqlite3_history_html)
@@ -804,6 +806,8 @@ def publish(publisher, created=[]):
             deltas_queue.html(sqlite3_queue, sqlite3_queue_html)
     except: 
         logger.exception('error while creating %r' , sqlite3_queue_html)
+
+def publish(publisher, created=[]):
     if publisher:
         if os.path.isfile(publisher):
             now=time.time()
