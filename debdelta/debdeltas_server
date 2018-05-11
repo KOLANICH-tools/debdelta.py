@@ -809,13 +809,17 @@ def _worker_creates_deltas(exit_when_queue_empty=False):
 def move_from_transit_to_server():
     p=subprocess.Popen(['find','-type','f', '-not', '-name', '*_tmp_'],
                        cwd=deltas_transit_dir,stdout=subprocess.PIPE)
+    count=0
     for j in p.stdout:
         j=j[:-1]
         delta=join(deltas_www_dir,j)
         deltadirname=os.path.dirname(delta)
         if not os.path.exists(deltadirname):
             os.makedirs(deltadirname)
+        logger.debug('moving from transit %r',j)
         shutil.move(join(deltas_transit_dir,j),delta)
+        count += 1
+    logger.info('moved %d files from transit', count)
     p.wait()
 
 def append_to_sql_history(x, ret, x_fields_enum, thesqlhistory):
