@@ -518,8 +518,15 @@ def scan_packages(packages,label,ibpa):
             a['Basepath'] = m
             a['Packages_file'] = p  # <- deb822 crashes on this
             a['Timestamp'] = b
-            if os.path.isfile(join(m,a['Filename'])):
-                debdelta.info_by_pack_arch_add(a,ibpa)
+            ## do note check if the file exists... it will be rechecked
+            #if os.path.isfile(join(m,a['Filename'])):
+            #    debdelta.info_by_pack_arch_add(a,ibpa)
+            ## inlined, maybe it is faster
+            pack = a['Package']
+            arch = a['Architecture']
+            if  (pack,arch) not in  ibpa :
+                ibpa[ (pack,arch) ]=[]
+            ibpa[ (pack,arch) ].append( a )
 
 
 
