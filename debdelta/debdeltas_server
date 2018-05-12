@@ -801,8 +801,9 @@ def _worker_creates_deltas(exit_when_queue_empty=False):
                         logger.warn('failed %r' , repr(x[E.delta]))
                         # FIXME REQUEUE if r == 1 , in case recreate timestamp
                 append_to_sql_history(x, ret, E, thesqlhistory)
-            if (created and time.time() > publisher_interval + last_publishing) or \
-               len(created) > publisher_flush_deltas :
+            if publish.poll() is not None and \
+               ( (created and time.time() > publisher_interval + last_publishing) or \
+               len(created) > publisher_flush_deltas ):
                 publish.wait()
                 update_html()
                 move_from_transit_to_server()
