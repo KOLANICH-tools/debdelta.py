@@ -852,6 +852,11 @@ def append_to_sql_history(x, ret, x_fields_enum, thesqlhistory):
 
 def update_html():
     try:
+        if sqlite3_web_log:
+            shutil.copy(join(logs_dir,'debdeltas_server'), sqlite3_web_log)
+    except: 
+        logger.exception('error while creating %r' , sqlite3_web_log)
+    try:
         if sqlite3_history and sqlite3_history_html:
             logger.debug('updating %r', sqlite3_history_html)
             deltas_history.html_one_day(sqlite3_history, sqlite3_history_html)
