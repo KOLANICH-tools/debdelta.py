@@ -911,6 +911,12 @@ class Publisher(object):
             return p
         else:
             logger.warn(' does not exists: '+publisher)
+    def poll(self):
+            if not self.proc:
+                return self.returncode
+            self.returncode=self.proc.poll()
+            self._log_publishing()
+            return self.returncode
     def wait(self):
             if not self.proc:
                 # no use warning here ... logger.warn(' publisher is not running')
