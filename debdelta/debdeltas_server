@@ -721,12 +721,21 @@ def create_one_delta_from_queue(x, y, thesqldb):
                 logger.warn('missing old deb %r for %r' ,   x[E.old_name], x[E.delta])
             elif not os.path.isfile(x[E.new_name]):
                 logger.warn('missing new deb %r for %r' ,  x[E.new_name], x[E.delta])
+            # check in server
             elif os.path.isfile(x[E.delta]):
                 logger.info('already available delta %r' ,  x[E.delta])
             elif os.path.isfile(x[E.delta]+'-too-big'):
                 logger.info('tried, too big, delta %r' ,  x[E.delta])
             elif os.path.isfile(x[E.delta]+'-fails'):
                 logger.info('tried, it failed, delta %r' ,  x[E.delta])
+            # check in transit
+            elif os.path.isfile(y[E.delta]):
+                logger.info('already available delta %r' ,  y[E.delta])
+            elif os.path.isfile(y[E.delta]+'-too-big'):
+                logger.info('tried, too big, delta %r' ,  y[E.delta])
+            elif os.path.isfile(y[E.delta]+'-fails'):
+                logger.info('tried, it failed, delta %r' ,  y[E.delta])
+            # all fine, go create
             else:
                 try:
                     ret=debdelta.do_delta_and_test(* (y[2:6]))
