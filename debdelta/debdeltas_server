@@ -816,7 +816,7 @@ def _worker_creates_deltas(exit_when_queue_empty=False):
 def move_from_transit_to_server():
     p=subprocess.Popen(['find','-type','f', '-not', '-name', '*_tmp_'],
                        cwd=deltas_transit_dir,stdout=subprocess.PIPE)
-    count=0
+    moved=[]
     ndequeud=0
     for j in p.stdout:
         j=j[:-1]
@@ -826,15 +826,17 @@ def move_from_transit_to_server():
             os.makedirs(deltadirname)
         logger.debug('moving from transit %r',j)
         shutil.move(join(deltas_transit_dir,j),delta)
-        count += 1
+        moved.append(delta)
         a,b=os.path.splitext(delta)
         a+='.debdelta-queued'
         if os.path.isfile(a):
             logger.debug('removing from server %r',a)
             os.unlink(a)
             ndequeud+=1
-    logger.info('moved %d files from transit, %d queue timestamps removed', count, ndequeud)
+    logger.info('moved %d files from transit, %d queue timestamps removed',\
+                len(moved), ndequeud)
     p.wait()
+    return moved
 
 def append_to_sql_history(x, ret, x_fields_enum, thesqlhistory):
     if x and ret and thesqlhistory:
