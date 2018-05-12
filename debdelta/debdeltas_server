@@ -889,6 +889,7 @@ class Publisher(object):
     def __init__(self, publisher):
         self.publisher=publisher
         self.proc=None
+        self.returncode=False #  False means not process , None means process running
         self.created=None
         self.args=None
         self.now=0
@@ -906,24 +907,28 @@ class Publisher(object):
             self.created=created
             p=my_subprocess_Popen(args+created)
             self.proc=p
+            self.returncode=None
             return p
         else:
             logger.warn(' does not exists: '+publisher)
     def wait(self):
             if not self.proc:
                 # no use warning here ... logger.warn(' publisher is not running')
-                return
-            p=self.proc
-            p.wait()
-            if p.returncode:
-                logger.error('failed: exitstatus %r args %r deltas %r' , p.returncode, self.args, self.created)
+                return self.returncode
+            self.returncode=self.proc.wait()
+            self._log_publishing()
+            return self.returncode
+    def _log_publishing(self):
+        if self.proc and self.returncode is not None:
+            if self.returncode:
+                logger.error('failed: exitstatus %r args %r deltas %r' , self.returncode, self.args, self.created)
             else:
                 if self.created:
                     logger.info(' sent %d deltas in %d seconds' , len(self.created), time.time()-self.now )
                 else:
                     logger.info(' full sync in %d seconds'  ,  time.time()-self.now )
             self.proc=None
-            return p.returncode
+
 
 def update_popcon():
     " prepare a cache in popcon_cache, a pickle of a dict where keys are names of packages, and values\
