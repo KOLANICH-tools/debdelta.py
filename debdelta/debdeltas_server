@@ -766,6 +766,11 @@ def _worker_creates_deltas(exit_when_queue_empty=False):
         thesqlhistory=deltas_history.SQL_history(sqlite3_history)
     else:
         thesqlhistory=None
+    # 
+    update_html()
+    moved=move_from_transit_to_server()
+    publish.start(moved)
+    #
     while True:
         x=None
         try:
