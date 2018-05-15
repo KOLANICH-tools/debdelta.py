@@ -126,6 +126,8 @@ daemon_context=None
 if DO_DAEMON:
     daemon_context=daemon.DaemonContext(umask=0o022)
     daemon_context.open()
+    logger.info('Running as PID %d',os.getpid())
+
 
 ### redirect stdin and stderr
 
