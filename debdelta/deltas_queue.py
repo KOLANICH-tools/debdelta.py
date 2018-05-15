@@ -127,16 +127,15 @@ class SQL_queue(object):
         #http://stackoverflow.com/questions/15856976/transactions-with-python-sqlite3
         connection, cursor = self._get_connection_cursor()
         try:
-            cursor.execute('begin exclusive transaction')
+            connection.execute('begin exclusive transaction')
             if id_ == None:
                 cursor.execute('SELECT * FROM deltas_queue ORDER BY priority , ctime LIMIT 1 ')
             else:
                 cursor.execute('SELECT * FROM deltas_queue WHERE id = ? ', (id_,))
             x=cursor.fetchone()
-            if x == None: #
-                return None
-            id_ = x[0]
-            connection.execute('DELETE FROM deltas_queue where id = ? ', (id_,))
+            if x is not None:
+                id_ = x[0]
+                connection.execute('DELETE FROM deltas_queue where id = ? ', (id_,))
             connection.commit()
             #cursor.execute('commit transaction')
         except:
