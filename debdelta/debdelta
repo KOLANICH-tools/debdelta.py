@@ -3892,7 +3892,8 @@ def order_by_version(a, b, VersionCompare):
     return VersionCompare( a['Version'] , b['Version']  )
 
 
-def iter_deltas_one_pack_arch(pa,ar,info_pack,thedir,theforensicdir,VersionCompare):
+def iter_deltas_one_pack_arch(pa,ar,info_pack,thedir,theforensicdir,VersionCompare,
+                              loglevel=logging.ERROR):
     " iterate deltas to be created for package pa, architecture ar, by analyzing info_pack"
     if all([('CMDLINE' != a['Label']) for a in info_pack ]):
       #this happens a lot, e.g. when we are scanning non-free/Packages.gz,
@@ -3929,7 +3930,7 @@ def iter_deltas_one_pack_arch(pa,ar,info_pack,thedir,theforensicdir,VersionCompa
       return
     
     if not go_fishing(new,[]):
-      logger.error('Error, cannot locate new file: %r',new)
+      logger.log(loglevel, 'Cannot locate new file: %r',new)
       return
     
     if VERBOSE > 2 : 
@@ -3992,7 +3993,7 @@ def iter_deltas_one_pack_arch(pa,ar,info_pack,thedir,theforensicdir,VersionCompa
           continue
 
         if not go_fishing(old,info_pack):
-          logger.error('Error, cannot locate old file: %r',old)
+          logger.log(loglevel, 'Cannot locate old file: %r',old)
           continue
 
         forensicfile=None
