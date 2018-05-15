@@ -824,6 +824,7 @@ class Publisher(object):
             logger.warn(' publisher is already running, cannot run twice')
             return
         if os.path.isfile(publisher):
+            logger.info('publish')
             self.now=time.time()
             args=[self.publisher, config_abspath]
             self.args=args
