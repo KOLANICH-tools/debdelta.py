@@ -3850,7 +3850,7 @@ def delta_dirname(f,altdir):
       #this happens when DIR is not set, and the delta goes in the same directory as the deb
       return f
 
-def go_fishing(deb,others):
+def go_fishing(deb,others, loglevel=logging.ERROR):
     "Find a package filepath if missing, save it in deb['File']. deb = dict representing package ; others: list of such dicts."
     if 'File' in deb:
       assert os.path.isfile(deb['File'])
@@ -3880,7 +3880,7 @@ def go_fishing(deb,others):
             deb['File']=f
             if DEBUG > 1 : logger.debug('Fish! %r %r',deb,new)
             return f
-    logger.error('Error, bad fishing for %r %r', deb, others)
+    logger.log(loglevel, 'bad fishing for %r %r', deb, others)
     return False
 
 def order_by_version(a, b, VersionCompare):
