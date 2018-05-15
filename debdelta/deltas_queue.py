@@ -161,6 +161,12 @@ class SQL_queue(object):
         connection, cursor = self._get_connection_cursor()
         cursor.execute('SELECT * FROM deltas_queue ORDER BY priority , ctime')
         return cursor
+    
+    def queue_peek_delta(self, delta):
+        conn,cursor = self._get_connection_cursor()
+        cursor.execute('SELECT * FROM deltas_queue WHERE delta = ?', (delta, ))
+        return cursor.fetchone()
+        
 
 
 _html_top="""<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
