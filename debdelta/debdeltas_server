@@ -602,7 +602,8 @@ def iter_backups_for_deltas(bPd=backup_Packages_dir):
                 assert(info_pack)
                 for z in  debdelta.iter_deltas_one_pack_arch(pa,ar,info_pack, \
                               deltas_www_dir+'/'+p[0]+'-deltas//',\
-                              forensic_www_dir+'//', VersionCompare):
+                              forensic_www_dir+'//', VersionCompare,
+                              loglevel=logging.DEBUG):
                     count += 1
                     yield z
             logger.info(' yielded %d',count)
