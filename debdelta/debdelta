@@ -3929,7 +3929,7 @@ def iter_deltas_one_pack_arch(pa,ar,info_pack,thedir,theforensicdir,VersionCompa
       if VERBOSE > 3 : logger.debug('    No older versions: %r', new)
       return
     
-    if not go_fishing(new,[]):
+    if not go_fishing(new,[], loglevel):
       logger.log(loglevel, 'Cannot locate new file: %r',new)
       return
     
@@ -3992,7 +3992,7 @@ def iter_deltas_one_pack_arch(pa,ar,info_pack,thedir,theforensicdir,VersionCompa
           if VERBOSE > 1 : logger.debug('  Skip , tried and fails: %r',delta)
           continue
 
-        if not go_fishing(old,info_pack):
+        if not go_fishing(old,info_pack, loglevel):
           logger.log(loglevel, 'Cannot locate old file: %r',old)
           continue
 
