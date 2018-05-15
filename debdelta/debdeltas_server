@@ -656,14 +656,15 @@ def _scan_backups_queue_deltas(bPd=backup_Packages_dir):
     for old, new, delta, forensicfile in iter_backups_for_deltas(bPd):
         p=old['Packages_file']
         priority=compute_priority(old,new)
+        shortdelta=delta[len(deltas_www_dir)+1:]
         if  os.path.isfile(delta) or os.path.exists(delta+'-too-big') or os.path.exists(delta+'-fails'):
             # fixme should check also if the new deb is too small
             logger.debug('exists, not queued: %r' ,( priority, old, new, delta, forensicfile))
         else:
             # this may actually requeue already queued records...
             # it is ok since they will have newer timestamps
-            thesqldb.queue_add(priority, old['File'], new['File'], delta, forensicfile)
-            logger.debug('queued: %r' ,( priority, old, new, delta, forensicfile))
+            thesqldb.queue_add(priority, old['File'], new['File'], shortdelta, forensicfile)
+            logger.debug('queued: %r' ,( priority, old, new, shortdelta, forensicfile))
             #
             deltadirname=os.path.dirname(delta)
             if not os.path.exists(deltadirname):
@@ -788,8 +789,11 @@ def _worker_creates_deltas(exit_when_queue_empty=False):
                 time.sleep(60)
             else:
                 y=list(x)
+                x=list(x)
                 delta=x[E.delta]
-                y[E.delta]=join(deltas_transit_dir,delta[len(deltas_www_dir)+1:])
+                shortdelta = delta[len(deltas_www_dir)+1:] if delta[0] == '/' else delta
+                x[E.delta]=join(deltas_www_dir,shortdelta)
+                y[E.delta]=join(deltas_transit_dir,shortdelta)
                 ret=None
                 try:
                     ret = create_one_delta_from_queue(x, y, thesqldb)
@@ -797,11 +801,11 @@ def _worker_creates_deltas(exit_when_queue_empty=False):
                     break
                 if ret:
                     if  0 == ret[0]:
-                        logger.info('created %r' , repr(x[E.delta]))
+                        logger.info('created %r' , shortdelta)
                         if os.path.exists(y[E.delta]): # do not append if the delta was too big
                             created.append(x[E.delta])
                     else:
-                        logger.warn('failed %r' , repr(x[E.delta]))
+                        logger.warn('failed %r' , shortdelta)
                         # FIXME REQUEUE if r == 1 , in case recreate timestamp
                 append_to_sql_history(x, ret, E, thesqlhistory)
             if publish.poll() is not None and \
