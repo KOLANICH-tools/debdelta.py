@@ -725,7 +725,7 @@ def create_one_delta_from_queue(x, thesqldb):
                     # python-daemon will raise this on sigterm
                     logger.warning('while do_delta_and_test , SystemExit or KeyboardInterrupt')
                     try:
-                        if x: thesqldb.queue_add(*x)
+                        if x: thesqldb.queue_add(*(x[1:]))
                     except:
                         logger.exception('while requeueing %r', x)
                     raise
