@@ -4141,6 +4141,8 @@ def do_delta_and_test(old_File, new_File, delta, forensicfile):
         
         #eventually, put in its place
         if os.path.isfile(deltatmp):
+          # update delta size , since info and signatures were added
+          delta_size = os.path.getsize(deltatmp)
           os.rename(deltatmp,delta)
           return (exitstatus, delta_size, elaps, p_elaps, info_delta, '')
         else:
