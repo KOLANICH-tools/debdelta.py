@@ -774,8 +774,8 @@ def _worker_creates_deltas(exit_when_queue_empty=False):
     else:
         thesqlhistory=None
     # 
-    update_html()
     moved=move_from_transit_to_server()
+    update_html()
     publish.start(moved)
     #
     while True:
@@ -815,8 +815,8 @@ def _worker_creates_deltas(exit_when_queue_empty=False):
                ( (created and time.time() > publisher_interval + last_publishing) or \
                len(created) > publisher_flush_deltas ):
                 publish.wait()
-                update_html()
                 move_from_transit_to_server()
+                update_html()
                 publish.start(created)
                 created=[]
                 last_publishing = time.time()
@@ -824,8 +824,8 @@ def _worker_creates_deltas(exit_when_queue_empty=False):
                 time.sleep(0.0001)
     #
     publish.wait()
-    update_html()
     move_from_transit_to_server()
+    update_html()
     publish.start()
     publish.wait()
 
@@ -879,11 +879,6 @@ def append_to_sql_history(x, ret, x_fields_enum, thesqlhistory):
 
 def update_html():
     try:
-        if sqlite3_web_log:
-            shutil.copy(join(logs_dir,'debdeltas_server'), sqlite3_web_log)
-    except: 
-        logger.exception('error while creating %r' , sqlite3_web_log)
-    try:
         if sqlite3_history and sqlite3_history_html:
             logger.debug('updating %r', sqlite3_history_html)
             deltas_history.html_one_day(sqlite3_history, sqlite3_history_html)
@@ -895,6 +890,11 @@ def update_html():
             deltas_queue.html(sqlite3_queue, sqlite3_queue_html)
     except: 
         logger.exception('error while creating %r' , sqlite3_queue_html)
+    try:
+        if sqlite3_web_log:
+            shutil.copy(join(logs_dir,'debdeltas_server'), sqlite3_web_log)
+    except:
+        logger.exception('error while creating %r' , sqlite3_web_log)
 
 class Publisher(object):
     def __init__(self, publisher):
