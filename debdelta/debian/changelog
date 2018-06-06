@@ -1,3 +1,9 @@
+debdelta (0.62) unstable; urgency=medium
+
+  * update Vcs-git to point to salsa
+
+ -- A Mennucc1 <mennucc1@debian.org>  Wed, 06 Jun 2018 09:22:34 +0200
+
 debdelta (0.61) unstable; urgency=medium
 
   * support for control.tar.xz
