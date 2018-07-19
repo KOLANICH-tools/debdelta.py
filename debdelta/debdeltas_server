@@ -677,15 +677,17 @@ def _scan_backups_queue_deltas(bPd=backup_Packages_dir):
 
 
 def set_environ_gpg_agent():
-    if gnupg_agent_info == True:
+    if gnupg_agent_mode == True:
         pass #keep environment if available
-    elif type(gnupg_agent_info) in (str,unicode):
-        if os.path.isfile(gnupg_agent_info):
-            gpg_agent_info=open(gnupg_agent_info).readline().strip().split('=')[1]
-            os.environ['GPG_AGENT_INFO']=gpg_agent_info
+    elif gnupg_agent_mode == 'load':
+        if os.path.isfile(gnupg_agent_info_file):
+            gpg_agent_info=open(gnupg_agent_info_file).readline().strip().split('=')[-1]
+            if gpg_agent_info:
+                os.environ['GPG_AGENT_INFO']=gpg_agent_info
         else:
-            logger.error(' file not found: '+gnupg_agent_info)
-    elif gnupg_agent_info == False :
+            # environment is unused for gnupg >= 2.1
+            logger.warn(' file not found: %r' % gnupg_agent_info_file)
+    elif gnupg_agent_mode == False :
         if'GPG_AGENT_INFO' in os.environ:
             del os.environ['GPG_AGENT_INFO']
     else:
