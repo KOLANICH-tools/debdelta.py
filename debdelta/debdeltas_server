@@ -21,6 +21,8 @@ Possible commands:
  
  start_gpg_agent                     starts the agent and loads the gpg key 
                                     (FIXME)
+
+ test_gpg_signing                  test if it can gpg-sign a file
  
  update_popcon                     update cache of popularity contest
  
@@ -1060,16 +1062,25 @@ def start_gpg_agent():
     #
     if gpg_agent_info:
         os.environ['GPG_AGENT_INFO']=gpg_agent_info
+    return r
+
+def test_gpg_signing():
     n=tempfile.NamedTemporaryFile(delete=False)
     n.write('pippo\n')
     n.close()
-    
-    r=subprocess.Popen(['gpg', '--quiet', '--batch', '--homedir', gnupg_home,\
-                     '-o', '/dev/null', '--default-key' , gnupg_key , '--sign', n.name],
-                     stdin=sys.stdin, stderr=sys.stderr, stdout=sys.stdout)
-    if r: sys.stderr.write('test signing fails '+repr(r)+'\n')
+    e=tempfile.NamedTemporaryFile(delete=False)
+    p=subprocess.Popen(['gpg', '--quiet', '--batch', '--homedir', gnupg_home,\
+                     '-o', '/dev/null', '-u' , gnupg_key , '--sign', n.name],
+                       stdin=sys.stdin, stderr=e, stdout=e)
+    p.wait()
+    r=p.returncode
+    e.close()
+    if r:
+        logger.error('test signing fails, return code '+repr(r))
+        logger.error(repr(open(e.name).read()))
     os.unlink(n.name)
-
+    os.unlink(e.name)
+    return r
 
 ####
 
@@ -1146,7 +1157,10 @@ elif args[0] == 'daemonize_test':
     
 elif args[0] == 'start_gpg_agent':
     return_code=start_gpg_agent()
-    
+
+elif args[0] == 'test_gpg_signing':
+    return_code=test_gpg_signing()
+
 elif args[0] == 'publish':
     publish=Publisher(publisher)
     update_html()
