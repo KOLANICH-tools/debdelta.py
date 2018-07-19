@@ -86,7 +86,7 @@ binary-arch:	checkroot build
 	install contrib/dpkg-sig $(D)/usr/share/debdelta
 	cp contrib/debmirror*trash_option.patch  $(D)/usr/share/debdelta
 	ln -s ../../bin/debdelta  $(D)/usr/share/debdelta/debpatch-url
-	cp keyrings/pub.gpg $(D)/usr/share/keyrings/debian-debdelta-archive-keyring.gpg
+	cp keyrings/pubring.gpg $(D)/usr/share/keyrings/debian-debdelta-archive-keyring.gpg
 	chmod 0644 $(D)/usr/share/keyrings/debian-debdelta-archive-keyring.gpg
 	# /usr/lib
 	$(INSTALL_PROGRAM)  minigzip $(D)/usr/lib/debdelta/minigzip
