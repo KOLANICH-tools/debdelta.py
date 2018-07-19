@@ -713,6 +713,10 @@ def create_one_delta_simple():
 
 worker_creates_deltas_lockname=join(lock_dir,'worker_creates_deltas')
 def worker_creates_deltas(exit_when_queue_empty=False):
+    r=start_gpg_agent()
+    ##if r != 0: return ## currently the agent is not really needed
+    r=test_gpg_signing()
+    if r != 0: return
     with lockfile.FileLock(worker_creates_deltas_lockname, timeout=lock_timeout) as L:
         logger.debug('start , EQE=%r' % exit_when_queue_empty)
         open(L.path,'w').write(pickle.dumps({'exit_when_queue_empty':exit_when_queue_empty,'pid':os.getpid()}))
