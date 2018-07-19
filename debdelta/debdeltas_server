@@ -1031,6 +1031,49 @@ def daemonize_maybe_mail(cmdname, cmd, *args, **kw):
         logger.exception(cmdname)
 
 def start_gpg_agent():
+    # https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=796931
+    try:
+        version=subprocess.check_output(['gpg-agent','--homedir', gnupg_home,'--version'])
+        agenthelp=subprocess.check_output(['gpg-agent','--homedir', gnupg_home,'--help'])
+    except subprocess.CalledProcessError:
+        logger.error('Cannot run gpg-agent --version or --help')
+        return False
+    try:
+        version=version.split('\n')[0].split()[-1]
+        version=map(int,version.split('.'))
+    except:
+        logger.error('cannot parse gpg-agent version '+repr(version))
+    has_env='--write-env-file' in agenthelp
+    logger.info('gpg-agent version %r , supports environ %r' % (version, has_env))
+    #
+    if has_env:
+        r = start_gpg_agent_environ()
+    else:
+        r = start_gpg_agent_noenviron()
+    if r == 0:
+        r=test_gpg_signing()
+    return r
+
+def start_gpg_agent_noenviron():
+    p=subprocess.Popen(['gpg-connect-agent','--homedir', gnupg_home,'--no-autostart'],
+                       stdin=subprocess.PIPE,stdout=subprocess.PIPE)
+    magik='3PlOBJK'
+    try:
+        p.stdin.write('/echo '+magik)
+    except IOError:
+        pass # maybe the process has already exited.. broken pipe
+    p.stdin.close()
+    s=p.stdout.read()
+    p.wait()
+    if p.returncode == 0 and s[:len(magik)] == magik:
+        logger.info('agent is already running')
+        r=0
+    else:
+        logger.info('starting agent')
+        r=subprocess.call(['gpg-agent','--homedir', gnupg_home,'--daemon'])
+    return r
+
+def start_gpg_agent_environ():
     # ignore environment ?
     #gpg_agent_info=os.getenv('GPG_AGENT_INFO')
     if 'GPG_AGENT_INFO' in os.environ:
