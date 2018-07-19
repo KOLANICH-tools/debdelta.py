@@ -1031,10 +1031,11 @@ def daemonize_maybe_mail(cmdname, cmd, *args, **kw):
 def start_gpg_agent():
     # ignore environment ?
     #gpg_agent_info=os.getenv('GPG_AGENT_INFO')
-    del os.environ['GPG_AGENT_INFO']
+    if 'GPG_AGENT_INFO' in os.environ:
+        del os.environ['GPG_AGENT_INFO']
     gpg_agent_info=None
     if os.path.isfile(gnupg_agent_info_file):
-        gpg_agent_info=open(gnupg_agent_info_file).readline().strip().split('=')[1]
+        gpg_agent_info=open(gnupg_agent_info_file).readline().strip().split('=')[-1]
     if gpg_agent_info:
         if not os.path.exists(gpg_agent_info.split(':')[0]):
             logger.warn(' agent info is obsolete %r', gpg_agent_info)
@@ -1056,7 +1057,9 @@ def start_gpg_agent():
         gpg_agent_info=open(gnupg_agent_info_file).readline().strip().split('=')[1]
         logger.info('started agent %r', gpg_agent_info)
     
-    os.environ['GPG_AGENT_INFO']=gpg_agent_info
+    #
+    if gpg_agent_info:
+        os.environ['GPG_AGENT_INFO']=gpg_agent_info
     n=tempfile.NamedTemporaryFile(delete=False)
     n.write('pippo\n')
     n.close()
