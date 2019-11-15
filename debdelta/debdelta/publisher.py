@@ -2,7 +2,7 @@
 
 " debdeltas  publisher "
 
-import os, sys, subprocess, ConfigParser, copy
+import os, sys, subprocess, configparser, copy
 
 
 # -a is -rlptgoD  (no -H,-A,-X)
@@ -43,7 +43,7 @@ def publish(rsync_args, basedir, rsync_destination, files=[]):
 
 
 def main():
-    config = ConfigParser.SafeConfigParser()
+    config = configparser.SafeConfigParser()
     assert os.path.isfile(sys.argv[1])
     config.read(sys.argv[1])
     assert config.has_section("'server'")

@@ -10,11 +10,11 @@ import time, string, shutil, pickle, lockfile, logging, logging.handlers
 import sqlite3 as dbapi
 
 if sys.version_info.major == 2:
-    string_types = (str, unicode)  # python2
-    from urllib import quote as urllib_quote
+    string_types = (str, str)  # python2
+    from urllib.parse import quote as urllib_quote
 else:
     string_types = (str, bytes)  # python3
-    import urllib, urllib.parse
+    import urllib.request, urllib.parse, urllib.error, urllib.parse
     from urllib.parse import quote as urllib_quote
 
 
@@ -181,9 +181,9 @@ def html_one_day(db, W):
 def main():
     if sys.argv[1] == "create_test":
         n = tempfile.NamedTemporaryFile(delete=False, suffix=".sql")
-        print("Creating test sqlite3 database: %r" % n.name)
+        print(("Creating test sqlite3 database: %r" % n.name))
         s = SQL_history(n.name)
-        print("Adding an entry in %r" % n.name)
+        print(("Adding an entry in %r" % n.name))
         s.add(
             "debian",
             "pippo",
@@ -202,7 +202,7 @@ def main():
             1,
             1.2,
         )
-        print("Adding a failed entry in %r" % n.name)
+        print(("Adding a failed entry in %r" % n.name))
         s.add(
             "debian",
             "pippo",
@@ -225,7 +225,7 @@ def main():
         s = SQL_history(sys.argv[2])
         since = int(time.time()) - 24 * 3600
         for x in s.iterate_since(since):
-            print(repr(x))
+            print((repr(x)))
     elif sys.argv[1] == "html_one_day":
         W = sys.argv[3] if (len(sys.argv) > 3) else sys.stdout.write
         html_one_day(sys.argv[2], W)

@@ -64,7 +64,7 @@ def help(cmd=None):
         cmd = cmd[2:]
     sys.stderr.write(__help__.get(cmd, " UNKNOWN COMMAND ") + "\n")
     if cmd:
-        sys.stderr.write("\nOptions:\n  " + string.join(__help__options__.values(), "\n  ") + "\n")
+        sys.stderr.write("\nOptions:\n  " + string.join(list(__help__options__.values()), "\n  ") + "\n")
 
 
 try:
@@ -189,9 +189,9 @@ class theSQLdb:
             versions = self.package_versions(n[0], n[2], n[1])
             # TODO this is a very good place to delete extra, very old versions
             if len(versions) == 1:
-                print "Only one version for ", n, versions
+                print("Only one version for ", n, versions)
             else:
-                print " Creating deltas for ", n
+                print(" Creating deltas for ", n)
 
                 def _cmp_(a, b):
                     return VersionCompare(a[3], b[3])
@@ -199,7 +199,7 @@ class theSQLdb:
                 versions.sort(cmp=_cmp_)
                 new = versions.pop()
                 for a in versions:
-                    print "  Create delta from ", a[3], " to ", new[3]
+                    print("  Create delta from ", a[3], " to ", new[3])
         # TODO mark all above as 'generated=1' when done, if successful
 
 
@@ -244,7 +244,7 @@ def sos(dbname, workspace, argv):
     if not a:
         sys.stderr.write("Filename not found: %s\n" % repr(argv))
         return
-    print "WILL SAVE", a, "SOMEWHERE INSIDE", workspace, " AND UPDATE SQL ACCORDINGLY"
+    print("WILL SAVE", a, "SOMEWHERE INSIDE", workspace, " AND UPDATE SQL ACCORDINGLY")
     # in particular, will mark it as 'owned', so it will be deleted when it will be old
 
 def main():
@@ -276,7 +276,7 @@ def main():
             WORKSPACE = v
         elif o == "--stdin":
             STDIN = True
-        elif o[:2] == "--" and o[2:] in __help__.keys():
+        elif o[:2] == "--" and o[2:] in list(__help__.keys()):
             if cmd:
                 sys.stderr.write(" option ", o, "is unacceptable after", cmd)
                 raise SystemExit(1)

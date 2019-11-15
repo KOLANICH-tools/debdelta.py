@@ -6,7 +6,6 @@
 import sys, os, tempfile, string, getopt, tarfile, shutil, time, traceback
 import subprocess, time, tarfile, stat, hashlib, random, gzip
 
-from string import join
 import logging.handlers
 import logging
 from stat import ST_SIZE, ST_MTIME, ST_MODE, S_IMODE, S_IRUSR, S_IWUSR, S_IXUSR
@@ -142,7 +141,7 @@ minibzip2 = "/usr/lib/debdelta/minibzip2"
 
 
 try:
-    import ConfigParser
+    import configparser
 except ImportError:
     import configparser
 
@@ -155,7 +154,7 @@ except ImportError:
     debian_deb822 = None
 
 try:
-    import cPickle as pickle
+    import pickle as pickle
 except ImportError:
     import pickle
 
@@ -165,7 +164,7 @@ if __name__ == "__main__":
 logger = logging.getLogger(__name__)
 
 if sys.version_info.major == 2:
-    string_types = (str, unicode)  # python2
+    string_types = (str, str)  # python2
 else:
     string_types = (str, bytes)  # python3
 
@@ -337,7 +336,7 @@ def freespace(w):
     assert os.path.exists(w)
     try:
         a = os.statvfs(w)
-        freespace = long(a[0]) * long(a[4])
+        freespace = int(a[0]) * int(a[4])
     except Exception:
         logger.exception("Statvfs error on %r", w)
         freespace = None
@@ -493,7 +492,7 @@ class cache_sequence(object):
         self.cache = gzip.GzipFile(self.cache_filename)
         return self
 
-    def next(self):
+    def __next__(self):
         assert self.cache
         try:
             return pickle.load(self.cache)
@@ -560,9 +559,9 @@ class cache_same_dict(cache_sequence):
         n = [s[k] for k in self.keys]
         super(cache_same_dict, self).write(n)
 
-    def next(self):
-        n = super(cache_same_dict, self).next()
-        return dict(map(lambda x, y: (x, y), self.keys, n))  # dict comprehension may be used instead
+    def __next__(self):
+        n = next(super(cache_same_dict, self))
+        return dict(list(map(lambda x, y: (x, y), self.keys, n)))  # dict comprehension may be used instead
 
 
 #####################################################################
@@ -655,14 +654,14 @@ def prepare_for_echo(s):
 
 def version_mangle(v):
     if ":" in v:
-        return join(v.split(":"), "%3a")
+        return "%3a".join(v.split(":"))
     else:
         return v
 
 
 def version_demangle(v):
     if "%" in v:
-        return join(v.split("%3a"), ":")
+        return ":".join(v.split("%3a"))
     else:
         return v
 
@@ -862,7 +861,7 @@ def gpg_sign_command():
 
 def compute_md5_up_to_len(o, length):
     "hash initial part of a file using MD5. 'o' may be a string (in which case the file is opened) or a file type; returns MD5 and bytes effectively read"
-    assert type(length) in (int, long) and length >= 0
+    assert type(length) in (int, int) and length >= 0
     if type(o) in string_types:
         o = open(o)
     m = hashlib.md5()
@@ -1485,7 +1484,7 @@ def forensic_send(f, forensic=FORENSIC):
             forensic = forensic[:a]
         logger.warning(_("There were faulty deltas.") + " " + _("Now invoking the mail sender to send the logs."))
         if forensic in ("mutt", "mail"):
-            raw_input(_("(hit any key)"))
+            input(_("(hit any key)"))
             args = []
             for z in f:
                 if z:
@@ -1513,9 +1512,9 @@ def forensic_send(f, forensic=FORENSIC):
                     tar.add(j, arcname=os.path.basename(j))
         tar.close()
         # http://atlee.ca/software/poster
-        import urllib
-        import urllib2
-        import httplib
+        import urllib.request, urllib.parse, urllib.error
+        import urllib.request, urllib.error, urllib.parse
+        import http.client
         import poster
 
         poster.streaminghttp.register_openers()
@@ -1523,15 +1522,15 @@ def forensic_send(f, forensic=FORENSIC):
             {"auth_userid": "debdelta", "auth_password": "slartibartfast", "thefile": open(temptar, "rb")}
         )
         # Create the Request object
-        request = urllib2.Request("http://debdelta.debian.net:7890/receive", datagen, headers)
+        request = urllib.request.Request("http://debdelta.debian.net:7890/receive", datagen, headers)
         # Actually do the request, and get the response
-        logger.info(" " + _("Server answers:"), repr(urllib2.urlopen(request).read()))
+        logger.info(" " + _("Server answers:"), repr(urllib.request.urlopen(request).read()))
         return
     else:
         logger.warning(_("Faulty delta. Please send by email to %s the following files:\n") % EMAIL)
         for z in f:
             if z:
-                logger.warning(" " + string.join(z, " ") + "\n")
+                logger.warning(" " + " ".join(z) + "\n")
         return
     logger.warning(_('(Faulty delta. Please consider retrying with the option "--forensic=http" ).') + "\n")
 
@@ -1619,7 +1618,7 @@ def do_patch(delta, olddeb, newdeb, info=None, diversions=None, do_gpg=DO_GPG):
 
 def do_patch_(delta, olddeb, newdeb, TD, runtime, info=None, diversions=None, do_gpg=DO_GPG, do_progress=DO_PROGRESS):
 
-    import thread
+    import _thread
     import threading
 
     if TD[-1] != "/":
@@ -2566,7 +2565,7 @@ def do_delta_(olddeb, newdeb, delta, TD, forensic_file=None, info=[]):
             self.current_chunk_name = None
             self.delta_uses_infifo = delta_uses_infifo
             if delta_uses_infifo:  # create the fifo as input for xdelta3
-                self.the_fifo = a_numb_file.next()
+                self.the_fifo = next(a_numb_file)
                 self.fd.write("mkfifo %s\n" % self.the_fifo)
             else:
                 self.the_fifo = None
@@ -2594,7 +2593,7 @@ def do_delta_(olddeb, newdeb, delta, TD, forensic_file=None, info=[]):
         def zip_piped(self, cn, newhead=None):
             "inverts the unzip() function, with piped behaviour"
             if cn == ".gz":
-                cmd = string.join(self.gz_command, " ")
+                cmd = " ".join(self.gz_command)
                 if newhead:
                     s = prepare_for_echo(newhead)
                     self.fd.write("($E '" + s + "' && " + cmd + " | tail -c +" + str(len(newhead) + 1) + ")")
@@ -2706,7 +2705,7 @@ def do_delta_(olddeb, newdeb, delta, TD, forensic_file=None, info=[]):
         scan_control(p, params=None, prefix=o, info=s)
         p.close()
         if VERBOSE:
-            logger.debug(" " + o + ": " + join([o[4:] for o in s], " "))
+            logger.debug(" " + o + ": " + " ".join([o[4:] for o in s]))
         info = info + s
         del s, p
     info.append("OLD/Size: " + str(olddebsize))
@@ -2714,7 +2713,7 @@ def do_delta_(olddeb, newdeb, delta, TD, forensic_file=None, info=[]):
     params = info_2_db(info)
 
     # scan debdelta.conf to find any special requirement
-    debdelta_conf = ConfigParser.SafeConfigParser()
+    debdelta_conf = configparser.SafeConfigParser()
     debdelta_conf.read(["/etc/debdelta/debdelta.conf", expanduser("~/.debdelta/debdelta.conf")])
 
     debdelta_conf_skip = []
@@ -2830,7 +2829,7 @@ def do_delta_(olddeb, newdeb, delta, TD, forensic_file=None, info=[]):
         unlink(TD + "PATCH/" + f)
 
     def verbatim(f):
-        pp = a_numb_patch.next()
+        pp = next(a_numb_patch)
         p = "PATCH/" + pp
         if VERBOSE > 1:
             logger.debug("  including %r verbatim in patch", name)
@@ -2937,7 +2936,7 @@ def do_delta_(olddeb, newdeb, delta, TD, forensic_file=None, info=[]):
         if VERBOSE > 1:
             logger.debug("  compute delta for %s (%dkB) and %s (%dkB)", o, osize / 1024, n, nsize / 1024)
         #
-        p = "PATCH/" + a_numb_patch.next()
+        p = "PATCH/" + next(a_numb_patch)
         tim = -(time.time())
         #
         if DEBUG > 3:
@@ -3215,7 +3214,7 @@ def do_delta_(olddeb, newdeb, delta, TD, forensic_file=None, info=[]):
         b = subprocess.Popen(["xz", "-vv", "--robot", "--list", z.name], stdout=subprocess.PIPE)
         for a in b.stdout:
             a = a.rstrip("\n")
-            a = string.split(a, "\t")
+            a = a.split("\t")
             if a[0] == "block":
                 if crc and crc != a[9]:
                     logger.warn(
@@ -3620,7 +3619,7 @@ def do_delta_(olddeb, newdeb, delta, TD, forensic_file=None, info=[]):
 
         script.start_rebuilding()
 
-        current_chunk_name = a_numb_file.next()
+        current_chunk_name = next(a_numb_file)
         script.start_chunk(current_chunk_name)
         mega_cat = open(TD + "/" + current_chunk_name, "w")
 
@@ -3649,7 +3648,7 @@ def do_delta_(olddeb, newdeb, delta, TD, forensic_file=None, info=[]):
 
         def mega_cat_chunk(oldoffset, newoffset, background=True):
             global something_backgrounded
-            p = a_numb_file.next()
+            p = next(a_numb_file)
             f = open(TD + new_filename)
             f.seek(oldoffset)
             of = open(TD + p, "w")
@@ -3692,7 +3691,7 @@ def do_delta_(olddeb, newdeb, delta, TD, forensic_file=None, info=[]):
                 yield None
 
         some_old_file = some_old_file_gen()
-        one_old_file = some_old_file.next()
+        one_old_file = next(some_old_file)
 
         max_chunk_size = MAXMEMORY / 12
         chunk_discount = 0.3
@@ -3712,14 +3711,14 @@ def do_delta_(olddeb, newdeb, delta, TD, forensic_file=None, info=[]):
                     _append_("OLD/" + CWD, one_old_file, False)
                     if mega_cat.tell() >= max_chunk_size * chunk_discount:
                         break
-                    one_old_file = some_old_file.next()
+                    one_old_file = next(some_old_file)
                 # write the chunk into a temporary
                 mega_cat.close()
                 script.end_chunk(current_chunk_name)
                 # delta the chunk
                 mega_cat_chunk(progressive_new_offset, newtarinfo.offset)
                 # start a new chunk
-                current_chunk_name = a_numb_file.next()
+                current_chunk_name = next(a_numb_file)
                 script.start_chunk(current_chunk_name)
                 mega_cat = open(TD + "/" + current_chunk_name, "w")
                 #
@@ -4028,7 +4027,7 @@ def info_by_pack_arch_add(f, info_by_pack_arch):
 def iterate_Packages(packages, use_debian_822=True):
     fields = ("Package", "Architecture", "Version", "Filename")
     for f in fields:
-        intern(f)
+        sys.intern(f)
 
     packages = abspath(packages)
     assert os.path.isfile(packages)
@@ -4040,7 +4039,7 @@ def iterate_Packages(packages, use_debian_822=True):
     except ValueError:
         logger.error('Error: pathname "%s" does not contain "dists"\n' % packages)
         return
-    base = string.join(dir[:a], "/")
+    base = "/".join(dir[:a])
     #
     cache = cache_same_dict(packages, fields)
     if DO_CACHE and cache.exists:
@@ -4845,10 +4844,10 @@ def delta_upgrade_(args):
 
     original_cwd = os.getcwd()
 
-    import thread
+    import _thread
     import threading
-    import Queue
-    import urllib2
+    import queue
+    import urllib.request, urllib.error, urllib.parse
     import fcntl
     import atexit
     import signal
@@ -4863,7 +4862,7 @@ def delta_upgrade_(args):
         )
     # for example, urllib2 transforms http response "401"  into "404" , and "302" into "200"
 
-    config = ConfigParser.SafeConfigParser()
+    config = configparser.SafeConfigParser()
     a = config.read(["/etc/debdelta/sources.conf", expanduser("~/.debdelta/sources.conf")])
     # FIXME this does not work as documented in Python
     # if VERBOSE > 1 : print 'Read config files: ',repr(a)
@@ -4976,7 +4975,7 @@ def delta_upgrade_(args):
     # (to add some math in the future)
     params_of_delta = {}
 
-    patching_queue = Queue.Queue()
+    patching_queue = queue.Queue()
     thread_returns = {}
     # thread_do_patch
 
@@ -5013,7 +5012,7 @@ def delta_upgrade_(args):
                     else:
                         logger.info(msg % msgdata)
                 except KeyboardInterrupt:
-                    thread.interrupt_main()
+                    _thread.interrupt_main()
                     rmtree(TD)
                     return
                 except DebDeltaError:
@@ -5086,8 +5085,8 @@ def delta_upgrade_(args):
     #########################################
 
     import socket
-    import httplib
-    from urlparse import urlparse, urlunparse
+    import http.client
+    from urllib.parse import urlparse, urlunparse
 
     # manage connections
     # keeps a cache of all connections, by URL
@@ -5098,7 +5097,7 @@ def delta_upgrade_(args):
         if url not in http_conns:
             if VERBOSE > 1:
                 logger.debug("  Opening connection to: %r", url)
-            http_conns[url] = httplib.HTTPConnection(url, timeout=TIMEOUT)
+            http_conns[url] = http.client.HTTPConnection(url, timeout=TIMEOUT)
         return http_conns[url]
 
     def conn_close(url, fatal=False):
@@ -5124,20 +5123,20 @@ def delta_upgrade_(args):
             if conn is None:
                 return None, None, None, None
             try:
-                conn.request("GET", urllib2.quote(uri_p[2]), headers=headers)
+                conn.request("GET", urllib.parse.quote(uri_p[2]), headers=headers)
                 r = conn.getresponse()
                 return r, r.status, r.reason, r.msg
-            except (httplib.HTTPException, socket.error):
+            except (http.client.HTTPException, socket.error):
                 e = sys.exc_info()[1]
                 if VERBOSE:
                     puke(" Connection error (retrying): ", uri_p[1])
                 conn_close(uri)
                 try:
                     conn = conn_by_url(uri)
-                    conn.request("GET", urllib2.quote(uri_p[2]), headers=headers)
+                    conn.request("GET", urllib.parse.quote(uri_p[2]), headers=headers)
                     r = conn.getresponse()
                     return r, r.status, r.reason, r.msg
-                except (httplib.HTTPException, socket.error):
+                except (http.client.HTTPException, socket.error):
                     e = sys.exc_info()[1]
                     puke("Connection error (fatal): ", uri_p[1])
                     mainexitcodes.append(1)
@@ -5151,16 +5150,16 @@ def delta_upgrade_(args):
             try:
                 if uri_p.scheme == "http":
                     a = [copy(z) for z in uri_p]
-                    a[2] = urllib2.quote(uri_p[2])
+                    a[2] = urllib.parse.quote(uri_p[2])
                     uri = urlunparse(a)
-                req = urllib2.Request(uri, headers=headers)
-                r = urllib2.urlopen(req)
+                req = urllib.request.Request(uri, headers=headers)
+                r = urllib.request.urlopen(req)
                 # print r.info(),dir(r),r.code
                 return r, getattr(r, "code", None), getattr(r, "msg", "(no message)"), r.info()
-            except urllib2.HTTPError:
+            except urllib.error.HTTPError:
                 e = sys.exc_info()[1]
                 return e.code, None, None, None
-            except (httplib.HTTPException, socket.error, urllib2.URLError):
+            except (http.client.HTTPException, socket.error, urllib.error.URLError):
                 e = sys.exc_info()[1]
                 puke("Connection error (fatal)", uri)
                 mainexitcodes.append(1)
@@ -5191,7 +5190,7 @@ def delta_upgrade_(args):
             return None
         uri_p = urlparse(uri)
         assert uri_p[0] == "http"
-        conn.request("HEAD", urllib2.quote(uri_p[2]), headers=HTTP_USER_AGENT)
+        conn.request("HEAD", urllib.parse.quote(uri_p[2]), headers=HTTP_USER_AGENT)
         r = conn.getresponse()
         r.read()
         r.close()
@@ -5223,7 +5222,7 @@ def delta_upgrade_(args):
             outnametemp = outname
             complete = True
             try:
-                l = long(responseheaders.get("Content-Length"))
+                l = int(responseheaders.get("Content-Length"))
             except BaseException:
                 l = None
         else:  # FIXME how do we deal with a FTP mirror of deltas ?
@@ -5262,7 +5261,7 @@ def delta_upgrade_(args):
             # t=time.strftime("%a, %d %b %Y %H:%M:%S GMT", time.gmtime(t))
             ##re["If-Range"] =  time.strftime("%a, %d %b %Y %H:%M:%S GMT", time.gmtime(t))
             ####re["If-Range"] =  time.strftime("%a, %d %b %Y %H:%M:%S +0000", time.gmtime(t))
-            re["Range"] = "bytes=%li-" % ((long(l) - 1))
+            re["Range"] = "bytes=%li-" % ((int(l) - 1))
         # start downloading
         start_time = time.time()
         r, status, message, responseheaders = _connect(uri, re)
@@ -5286,7 +5285,7 @@ def delta_upgrade_(args):
         if status == 200:
             out = open(outnametemp, "w")
             try:
-                total_len = long(responseheaders["Content-Length"])
+                total_len = int(responseheaders["Content-Length"])
             except (KeyError, ValueError):
                 total_len = None
         elif status == 206:
@@ -5307,7 +5306,7 @@ def delta_upgrade_(args):
         else:
             out = open(outnametemp, "w")
             try:
-                total_len = long(responseheaders.get("Content-length"))
+                total_len = int(responseheaders.get("Content-length"))
             except ValueError:
                 total_len = None
 
@@ -5419,7 +5418,7 @@ def delta_upgrade_(args):
             installed_version = p.installed.version
             candidate_version = p.candidate.version
             newsize = p.candidate.size
-            deb_path = string.split(deb_uri, "/")
+            deb_path = deb_uri.split("/")
             try:
                 thepoolindex = deb_path.index("pool")
             except ValueError:
@@ -5428,7 +5427,7 @@ def delta_upgrade_(args):
                     % (p.name, candidate_version, deb_uri)
                 )
                 continue
-            deb_path = string.join(deb_path[thepoolindex:], "/")
+            deb_path = "/".join(deb_path[thepoolindex:])
 
             # try all possible variants of the filename
             newdebs = [p.shortname + "_" + candidate_version + "_" + arch + ".deb", os.path.basename(deb_uri)]
@@ -5510,7 +5509,7 @@ def delta_upgrade_(args):
             # some strange error in remote server?
             # FIXME this does not support ftp delta repositories
             if status != 200 and status != 206 and status != 404:
-                logger.warn("Delta is not downloadable (%s %s):%s", status, httplib.responses.get(status), uri)
+                logger.warn("Delta is not downloadable (%s %s):%s", status, http.client.responses.get(status), uri)
                 continue
 
             if status == 404:
@@ -5635,8 +5634,8 @@ def delta_upgrade_(args):
 
     # check available space
     a = freespace("/var/cache/apt/archives") / 1024
-    b = sum([int(s.get("NEW/Installed-Size", "0")) for s in params_of_delta.values()])
-    c = sum([int(s.get("NEW/Size", "0")) for s in params_of_delta.values()]) / 1024
+    b = sum([int(s.get("NEW/Installed-Size", "0")) for s in list(params_of_delta.values())])
+    c = sum([int(s.get("NEW/Size", "0")) for s in list(params_of_delta.values())]) / 1024
     if DEB_FORMAT == "deb" and a < c:
         logger.warn("**" + _("Very low disk space, need %(need)d kB have %(have)d kB"), {"need": c, "have": a})
     if DEB_FORMAT == "unzipped" and a < b:
@@ -5675,7 +5674,7 @@ def delta_upgrade_(args):
             thread_returns["downloaduri"] = os.path.basename(uri)
             r = download_uri(uri, abs_delta_name, deltas_down_time, deltas_down_size, thread_returns)
             del thread_returns["downloaduri"]
-            if r is None or isinstance(r, httplib.HTTPException):
+            if r is None or isinstance(r, http.client.HTTPException):
                 if VERBOSE:
                     logger.info(" " + _("You may wish to rerun, to get also:") + " " + uri)
                 continue
@@ -5708,7 +5707,7 @@ def delta_upgrade_(args):
             thread_returns["downloaduri"] = os.path.basename(uri)
             r = download_uri(uri, newdeb, debs_down_time, debs_down_size, thread_returns)
             del thread_returns["downloaduri"]
-            if r is None or isinstance(r, httplib.HTTPException):
+            if r is None or isinstance(r, http.client.HTTPException):
                 if VERBOSE:
                     logger.debug(" You may wish to rerun, to get also: %r", uri)
                 continue

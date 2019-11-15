@@ -316,8 +316,8 @@ def main(action=None):
             deb_uri = candidate.uri
             installed_version = p.installed.version
             candidate_version = p.candidate.version
-            deb_path = string.split(deb_uri, "/")
-            deb_path = string.join(deb_path[(deb_path.index("pool")) :], "/")
+            deb_path = deb_uri.split("/")
+            deb_path = "/".join(deb_path[(deb_path.index("pool")) :])
 
             delta_uri_base = delta_uri_from_config(
                 config,
@@ -364,7 +364,7 @@ def main(action=None):
         import select
         import fcntl
         import apt
-        import thread
+        import _thread
         import threading
         import time
 
@@ -409,7 +409,7 @@ def main(action=None):
                     log.write(" meth " + repr(bufin) + "\n")
                     bufin = ""
                 if s == "":
-                    thread.interrupt_main()
+                    _thread.interrupt_main()
                     global nthreads
                     if nthreads:
                         nthreads -= 1
@@ -426,7 +426,7 @@ def main(action=None):
                     log.write(" err " + repr(buferr) + "\n")
                     buferr = ""
                 if s == "":
-                    thread.interrupt_main()
+                    _thread.interrupt_main()
                     global nthreads
                     if nthreads:
                         nthreads -= 1
@@ -447,7 +447,7 @@ def main(action=None):
 
                     bufout = ""
                 if s == "":
-                    thread.interrupt_main()
+                    _thread.interrupt_main()
                     global nthreads
                     if nthreads:
                         nthreads -= 1
@@ -455,9 +455,9 @@ def main(action=None):
                     # return
                 os.write(hi.fileno(), s)
 
-        tin = thread.start_new_thread(copyin, ())
-        tout = thread.start_new_thread(copyout, ())
-        terr = thread.start_new_thread(copyerr, ())
+        tin = _thread.start_new_thread(copyin, ())
+        tout = _thread.start_new_thread(copyout, ())
+        terr = _thread.start_new_thread(copyerr, ())
         while nthreads > 0:
             log.write(" nthreads %d \n" % nthreads)
             try:

@@ -67,7 +67,7 @@ else:
     import subprocess
 
 if sys.version_info.major == 2:
-    string_types = (str, unicode)  # python2
+    string_types = (str, str)  # python2
 else:
     string_types = (str, bytes)  # python3
 
@@ -190,7 +190,7 @@ def enum(*enums):
 
 
 # configuration
-execfile(config_abspath)
+exec(compile(open(config_abspath, "rb").read(), config_abspath, 'exec'))
 
 tmp_dir = tmp_dir.rstrip("/")
 
@@ -716,7 +716,7 @@ def _scan_backups_queue_deltas(bPd=backup_Packages_dir):
 def set_environ_gpg_agent():
     if gnupg_agent_info:
         pass  # keep environment if available
-    elif type(gnupg_agent_info) in (str, unicode):
+    elif type(gnupg_agent_info) in (str, str):
         if os.path.isfile(gnupg_agent_info):
             gpg_agent_info = open(gnupg_agent_info).readline().strip().split("=")[1]
             os.environ["GPG_AGENT_INFO"] = gpg_agent_info
@@ -1007,14 +1007,14 @@ class Publisher(object):
 def update_popcon():
     " prepare a cache in popcon_cache, a pickle of a dict where keys are names of packages, and values\
     are popularity, normalized so that maximum popularity is 1.0 "
-    import cPickle as pickle
+    import pickle as pickle
 
     popcon_dict = {}
     maximum = None
     for a in my_subprocess_Popen(popcon_update_command, shell=True, stdout=subprocess.PIPE).stdout:
         if not a or a[0] == "#":
             continue
-        b = [c for c in string.split(a) if c]
+        b = [c for c in a.split() if c]
         if len(b) < 2 or b[1] == "Total":
             continue
         p, v = b[1], b[2]
