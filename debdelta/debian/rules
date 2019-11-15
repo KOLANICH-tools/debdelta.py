@@ -108,7 +108,7 @@ binary-arch:	checkroot build
 	chmod -c 0644 $(docdir)/*
 	cd $(docdir) && gzip -9n changelog FAQ
 	# man
-	cp -p *.1 $(mandir)
+	cp -p ./manpages/*.1 $(mandir)
 	chmod -c 0644 $(mandir)*.1
 	gzip -9n $(mandir)/*.1 
 	# build package
