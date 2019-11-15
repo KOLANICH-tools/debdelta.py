@@ -359,8 +359,6 @@ def main(action=None):
 
     # still work in progress
     if os.path.dirname(sys.argv[0]) == "/usr/lib/apt/methods":
-        import os
-        import sys
         import select
         import fcntl
         import apt
