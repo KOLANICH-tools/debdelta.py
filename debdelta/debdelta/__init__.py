@@ -27,6 +27,7 @@ EMAIL = "mennucc1@debian.org"
 #  more common error messages are translated,
 #    e.g.: out of disk space while using debdelta-upgrade , file does not exist...
 
+_ = None
 try:
     import gettext
 
@@ -37,8 +38,9 @@ except Exception:
     a = sys.exc_info[1]
     sys.stderr.write('Could not initialize "gettext", translations will be unavailable\n' + str(a))
 
-    def _(x):
+    def __(x):
         return x
+    _ = __
 
 
 doc = {}
