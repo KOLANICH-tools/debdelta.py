@@ -6,6 +6,7 @@
 # main program, do stuff
 
 from . import *
+from . import _
 
 def main(action=None):
     if os.path.dirname(sys.argv[0]) == "/usr/lib/apt/methods":
@@ -18,41 +19,41 @@ def main(action=None):
         # GPG signatures are required for debdelta-upgrade and debpatch
         DO_GPG = action in {"delta-upgrade", "patch"}
 
-        try:
-            (opts, argv) = getopt.getopt(
-                sys.argv[1:],
-                "vkhdM:n:A",
-                (
-                    "help",
-                    "info",
-                    "needsold",
-                    "dir=",
-                    "no-act",
-                    "alt=",
-                    "old=",
-                    "delta-algo=",
-                    "max-percent=",
-                    "deb-policy=",
-                    "clean-deltas",
-                    "clean-alt",
-                    "no-md5",
-                    "debug",
-                    "forensicdir=",
-                    "forensic=",
-                    "signing-key=",
-                    "accept-unsigned",
-                    "gpg-home=",
-                    "disable-feature=",
-                    "test",
-                    "format=",
-                    "cache",
-                    "timeout=",
-                ),
-            )
-        except getopt.GetoptError:
-            a = sys.exc_info()[1]
-            sys.stderr.write(sys.argv[0] + ": " + str(a) + "\n")
-            raise SystemExit(3)
+        #try:
+        (opts, argv) = getopt.getopt(
+            sys.argv[1:],
+            "vkhdM:n:A",
+            (
+                "help",
+                "info",
+                "needsold",
+                "dir=",
+                "no-act",
+                "alt=",
+                "old=",
+                "delta-algo=",
+                "max-percent=",
+                "deb-policy=",
+                "clean-deltas",
+                "clean-alt",
+                "no-md5",
+                "debug",
+                "forensicdir=",
+                "forensic=",
+                "signing-key=",
+                "accept-unsigned",
+                "gpg-home=",
+                "disable-feature=",
+                "test",
+                "format=",
+                "cache",
+                "timeout=",
+            ),
+        )
+        #except getopt.GetoptError:
+        #    a = sys.exc_info()[1]
+        #    sys.stderr.write(sys.argv[0] + ": " + str(a) + "\n")
+        #    raise SystemExit(3)
 
         for o, v in opts:
             if o == "-v":
@@ -120,7 +121,7 @@ def main(action=None):
                 if FORENSIC[:4] == "http":
                     try:
                         import poster
-                    except BaseException:
+                    except ImportError:
                         sys.stderr.write(
                             _('To use the http forensic, you must install the package "python-poster".') + "\n"
                         )
@@ -186,14 +187,14 @@ def main(action=None):
             except KeyboardInterrupt:
                 puke("debpatch exited by keyboard interrupt")
                 raise SystemExit(5)
-            except DebDeltaError:
-                s = sys.exc_info()[1]
-                puke("debpatch", s)
-                raise SystemExit(s.exitcode)
-            except Exception:
-                s = sys.exc_info()[1]
-                puke("debpatch", s)
-                raise SystemExit(4)
+            # except DebDeltaError:
+                # s = sys.exc_info()[1]
+                # puke("debpatch", s)
+                # raise SystemExit(s.exitcode)
+            #except Exception:
+            #    s = sys.exc_info()[1]
+            #    puke("debpatch", s)
+            #    raise SystemExit(4)
             raise SystemExit(0)
         # really patch
         if len(argv) != 3:
@@ -209,16 +210,16 @@ def main(action=None):
         except KeyboardInterrupt:
             puke("debpatch exited by keyboard interrupt")
             raise SystemExit(5)
-        except DebDeltaError:
-            s = sys.exc_info()[1]
-            puke("debpatch", s)
-            if s.logs:
-                forensic_send([s.logs])
-            raise SystemExit(s.exitcode)
-        except Exception:
-            s = sys.exc_info()[1]
-            puke("debpatch", s)
-            raise SystemExit(4)
+        # except DebDeltaError:
+            # s = sys.exc_info()[1]
+            # puke("debpatch", s)
+            # if s.logs:
+                # forensic_send([s.logs])
+            # raise SystemExit(s.exitcode)
+        #except Exception:
+        #    s = sys.exc_info()[1]
+        #    puke("debpatch", s)
+        #    raise SystemExit(4)
         raise SystemExit(0)
 
     elif action == "delta":
@@ -232,14 +233,14 @@ def main(action=None):
         except KeyboardInterrupt:
             puke("debdelta exited by keyboard interrupt")
             raise SystemExit(5)
-        except DebDeltaError:
-            s = sys.exc_info()[1]
-            puke("debdelta", s)
-            raise SystemExit(s.exitcode)
-        except Exception:
-            s = sys.exc_info()[1]
-            puke("debdelta", s)
-            raise SystemExit(4)
+        # except DebDeltaError:
+            # s = sys.exc_info()[1]
+            # puke("debdelta", s)
+            # raise SystemExit(s.exitcode)
+        #except Exception:
+        #    s = sys.exc_info()[1]
+        #    puke("debdelta", s)
+        #    raise SystemExit(4)
         raise SystemExit(0)
 
     elif action == "deltas":
@@ -252,14 +253,14 @@ def main(action=None):
         except KeyboardInterrupt:
             puke("debdeltas exited by keyboard interrupt")
             raise SystemExit(5)
-        except DebDeltaError:
-            s = sys.exc_info()[1]
-            puke("debdeltas", s)
-            raise SystemExit(s.exitcode)
-        except Exception:
-            s = sys.exc_info()[1]
-            puke("debdeltas", s)
-            raise SystemExit(4)
+        # except DebDeltaError:
+            # s = sys.exc_info()[1]
+            # puke("debdeltas", s)
+            # raise SystemExit(s.exitcode)
+        # except Exception:
+            # s = sys.exc_info()[1]
+            # puke("debdeltas", s)
+            # raise SystemExit(4)
         raise SystemExit(exitcode)
 
     elif action == "delta-upgrade":
@@ -271,14 +272,14 @@ def main(action=None):
         except KeyboardInterrupt:
             puke("debdelta-upgrade exited due to keyboard interrupt")
             raise SystemExit(5)
-        except DebDeltaError:
-            s = sys.exc_info()[1]
-            puke("debdelta-upgrade", s)
-            raise SystemExit(s.exitcode)
-        except Exception:
-            s = sys.exc_info()[1]
-            puke("debdelta-upgrade", s)
-            raise SystemExit(4)
+        #except DebDeltaError:
+        #    s = sys.exc_info()[1]
+        #    puke("debdelta-upgrade", s)
+        #    raise SystemExit(s.exitcode)
+        # except Exception:
+            # s = sys.exc_info()[1]
+            # puke("debdelta-upgrade", s)
+            # raise SystemExit(4)
         raise SystemExit(exitcode)
 
     elif action == "patch-url":
