@@ -178,8 +178,7 @@ def html_one_day(db, W):
             W("</tr>\n")
     W("</table></body></html>\n")
 
-
-if __name__ == "__main__" and len(sys.argv) > 1:
+def main():
     if sys.argv[1] == "create_test":
         n = tempfile.NamedTemporaryFile(delete=False, suffix=".sql")
         print("Creating test sqlite3 database: %r" % n.name)
@@ -232,3 +231,7 @@ if __name__ == "__main__" and len(sys.argv) > 1:
         html_one_day(sys.argv[2], W)
     else:
         raise ValueError("unknown command %r" % sys.argv[1])
+
+
+if __name__ == "__main__" and len(sys.argv) > 1:
+    main()

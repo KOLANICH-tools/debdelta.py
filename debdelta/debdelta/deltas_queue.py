@@ -220,10 +220,13 @@ def html(db, W):
     W("</table></body></html>\n")
     W("total %d elements in queue\n" % count)
 
+def main():
+    if len(sys.argv) > 1:
+        if sys.argv[1] == "html":
+            W = sys.argv[3] if (len(sys.argv) > 3) else sys.stdout.write
+            html(sys.argv[2], W)
+        else:
+            raise ValueError("unknown command %r" % sys.argv[1])
 
-if __name__ == "__main__" and len(sys.argv) > 1:
-    if sys.argv[1] == "html":
-        W = sys.argv[3] if (len(sys.argv) > 3) else sys.stdout.write
-        html(sys.argv[2], W)
-    else:
-        raise ValueError("unknown command %r" % sys.argv[1])
+if __name__ == "__main__" and :
+    main()

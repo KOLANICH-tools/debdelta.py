@@ -247,8 +247,7 @@ def sos(dbname, workspace, argv):
     print "WILL SAVE", a, "SOMEWHERE INSIDE", workspace, " AND UPDATE SQL ACCORDINGLY"
     # in particular, will mark it as 'owned', so it will be deleted when it will be old
 
-
-if __name__ == "__main__":
+def main():
     # argv = debugging_argv or sys.argv
     if len(sys.argv) <= 1:
         help()
@@ -306,3 +305,7 @@ if __name__ == "__main__":
     else:
         sys.stderr.write("Sorry this command is yet unimplemented: " + cmd + "\n")
         sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()

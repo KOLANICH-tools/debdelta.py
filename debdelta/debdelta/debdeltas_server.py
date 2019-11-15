@@ -1159,85 +1159,86 @@ def daemon_test(a="foobar"):
 
 
 #########################################################
+def main():
+    if not args:
+        if __name__ == "__main__":
+            sys.stderr.write("Please provide a command. Use -h\n")
+            sys.exit(2)
 
-if not args:
-    if __name__ == "__main__":
-        sys.stderr.write("Please provide a command. Use -h\n")
-        sys.exit(2)
+    elif args[0] == "backup_Packages":
+        backup_Packages()
 
-elif args[0] == "backup_Packages":
-    backup_Packages()
+    elif args[0] == "scan_backups_for_deltas":
+        scan_backups_for_deltas()
 
-elif args[0] == "scan_backups_for_deltas":
-    scan_backups_for_deltas()
+    elif args[0] == "scan_backups_queue_deltas":
+        scan_backups_queue_deltas()
 
-elif args[0] == "scan_backups_queue_deltas":
-    scan_backups_queue_deltas()
+        # kept for backward compatibility
+    elif args[0] == "backup_then_scan_and_queue_deltas" and not DO_DAEMON:
+        os.execv(sys_argv_0_abspath, ["-D", config_abspath, "backup,queue,worker"])
 
-    # kept for backward compatibility
-elif args[0] == "backup_then_scan_and_queue_deltas" and not DO_DAEMON:
-    os.execv(sys_argv_0_abspath, ["-D", config_abspath, "backup,queue,worker"])
-
-elif args[0] == "start_worker_d":
-    f = len(args) > 1 and args[1] == "--EQE"
-    if not DO_DAEMON:
-        os.execv(sys_argv_0_abspath, ["-D", config_abspath] + args)
-    else:
-        worker_creates_deltas(exit_when_queue_empty=f)
-    # end of stuff for backward compatibility
-
-elif args[0] in ("backup,queue,worker", "backup_then_scan_and_queue_deltas"):
-    backup_Packages()
-    scan_backups_queue_deltas()
-    L = lockfile.FileLock(worker_creates_deltas_lockname)
-    D = {}
-    if L.is_locked():
-        try:
-            D = pickle.load(open(L.path))
-        except BaseException:
-            logger.exception(" while reading lock info %r", L.path)
-        if D.get("exit_when_queue_empty"):
-            # after this time, either it has exited, or it has noted that other deltas have been queued
-            time.sleep(120)
+    elif args[0] == "start_worker_d":
+        f = len(args) > 1 and args[1] == "--EQE"
+        if not DO_DAEMON:
+            os.execv(sys_argv_0_abspath, ["-D", config_abspath] + args)
         else:
-            logger.debug(" backup,queue,worker : a persistent worker is present, exiting")
-    if not L.is_locked():
-        worker_creates_deltas(exit_when_queue_empty=True)
+            worker_creates_deltas(exit_when_queue_empty=f)
+        # end of stuff for backward compatibility
 
-elif args[0] == "start_worker":
-    f = len(args) > 1 and args[1] == "--EQE"
-    worker_creates_deltas(exit_when_queue_empty=f)
+    elif args[0] in ("backup,queue,worker", "backup_then_scan_and_queue_deltas"):
+        backup_Packages()
+        scan_backups_queue_deltas()
+        L = lockfile.FileLock(worker_creates_deltas_lockname)
+        D = {}
+        if L.is_locked():
+            try:
+                D = pickle.load(open(L.path))
+            except BaseException:
+                logger.exception(" while reading lock info %r", L.path)
+            if D.get("exit_when_queue_empty"):
+                # after this time, either it has exited, or it has noted that other deltas have been queued
+                time.sleep(120)
+            else:
+                logger.debug(" backup,queue,worker : a persistent worker is present, exiting")
+        if not L.is_locked():
+            worker_creates_deltas(exit_when_queue_empty=True)
 
-elif args[0] == "update_popcon":
-    update_popcon()
+    elif args[0] == "start_worker":
+        f = len(args) > 1 and args[1] == "--EQE"
+        worker_creates_deltas(exit_when_queue_empty=f)
 
-elif args[0] == "peek_queue":
-    thesqldb = SQL_queue(sqlite3_queue)
-    logger.info(thesqldb.queue_peek())
+    elif args[0] == "update_popcon":
+        update_popcon()
 
-elif args[0] == "create_one_delta":
-    create_one_delta_simple()
+    elif args[0] == "peek_queue":
+        thesqldb = SQL_queue(sqlite3_queue)
+        logger.info(thesqldb.queue_peek())
 
-elif args[0] == "daemonize_test":
-    daemon_test("barfoo")
+    elif args[0] == "create_one_delta":
+        create_one_delta_simple()
 
-elif args[0] == "start_gpg_agent":
-    return_code = start_gpg_agent()
+    elif args[0] == "daemonize_test":
+        daemon_test("barfoo")
 
-elif args[0] == "publish":
-    publish = Publisher(publisher)
-    update_html()
-    move_from_transit_to_server()
-    publish.start()
-    publish.wait()
+    elif args[0] == "start_gpg_agent":
+        return_code = start_gpg_agent()
 
-elif "--help" in args or "-h" in args:
-    sys.stderr.write(__doc__)
-    sys.exit(0)
-else:
-    sys.stderr.write("Command not recognized. Use -h \n")
-    sys.exit(2)
+    elif args[0] == "publish":
+        publish = Publisher(publisher)
+        update_html()
+        move_from_transit_to_server()
+        publish.start()
+        publish.wait()
 
+    elif "--help" in args or "-h" in args:
+        sys.stderr.write(__doc__)
+        sys.exit(0)
+    else:
+        sys.stderr.write("Command not recognized. Use -h \n")
+        sys.exit(2)
+    raise SystemExit(return_code)
 
 if __name__ == "__main__":
-    raise SystemExit(return_code)
+    main()
+

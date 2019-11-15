@@ -42,7 +42,7 @@ def publish(rsync_args, basedir, rsync_destination, files=[]):
     return r
 
 
-if __name__ == "__main__":
+def main():
     config = ConfigParser.SafeConfigParser()
     assert os.path.isfile(sys.argv[1])
     config.read(sys.argv[1])
@@ -73,3 +73,7 @@ if __name__ == "__main__":
     # TODO parse command arguments such as --delete
 
     publish(rsync_args, basedir, rsync_destination, args)
+
+
+if __name__ == "__main__":
+    main()
