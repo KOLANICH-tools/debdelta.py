@@ -596,11 +596,11 @@ def prepare_for_echo__(s):
             shortquoted = False
         elif a in "0123456789":
             if shortquoted:
-                a = "\\" + ("000" + oct(ord(a)))[-4:]
+                a = "\\" + ("000" + oct(ord(a))[2:])[-4:]
             shortquoted = False
             r += a
         else:
-            a = "\\" + oct(ord(a))
+            a = "\\" + '0'+oct(ord(a))[2:]
             r += a
             shortquoted = len(a) < 5
     return r
@@ -610,9 +610,9 @@ def apply_prepare_for_echo(shell, repres):
     a = ECHO_TEST + " $E '" + repres + "' \n exit "
     p = subprocess.Popen([shell], stdin=subprocess.PIPE, stdout=subprocess.PIPE, close_fds=True)
     (i, o) = (p.stdout, p.stdin)
-    o.write(a)
+    o.write(a.encode("utf-8"))
     o.close()
-    a = i.read()
+    a = i.read().decode("utf-8")
     i.close()
     return a
 
