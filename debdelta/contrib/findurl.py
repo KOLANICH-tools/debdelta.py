@@ -1,15 +1,13 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
-# Copyright (C) 2009 Andrea Mennucci.
+# Copyright (C) 2009-2019 Andrea Mennucci.
 # License: GNU Library General Public License, version 2 or later
 
-import os, sys, string, ConfigParser
-
-from string import join
+import os, sys, string, configparser
 
 def version_mangle(v):
   if  ':' in v :
-    return join(v.split(':'),'%3a')
+    return str.join('%3a', v.split(':'))
   else:
     return v
 
@@ -18,7 +16,7 @@ def delta_uri_from_config(config, **dictio):
   for s in secs:
     opt=config.options(s)
     if 'delta_uri' not in opt:
-      print 'Error!! sources.conf section ',s,'does not contain delta_uri'
+      print('Error!! sources.conf section ',s,'does not contain delta_uri')
       raise SystemExit(1)
     match=True
     for a in dictio:
@@ -32,21 +30,21 @@ def delta_uri_from_config(config, **dictio):
 
 ############main code
 if len( sys.argv) <=1 :
-  print "Usage: findurl.py [packages]"
+  print("Usage: findurl.py [packages]")
 else:
-  config=ConfigParser.SafeConfigParser()
+  config=configparser.ConfigParser()
   config.read(['/etc/debdelta/sources.conf', os.path.expanduser('~/.debdelta/sources.conf')  ])
 
   try:
     import  apt_pkg
   except ImportError:
-    print 'ERROR!!! python module "apt_pkg" is missing. Please install python-apt'
+    print('ERROR!!! python module "apt_pkg" is missing. Please install python-apt')
     raise SystemExit
   
   try:
     import  apt
   except ImportError:
-    print 'ERROR!!! python module "apt" is missing. Please install a newer version of python-apt (newer than 0.6.12)'
+    print('ERROR!!! python module "apt" is missing. Please install a newer version of python-apt (newer than 0.6.12)')
     raise SystemExit
   
   apt_pkg.init()
@@ -59,21 +57,21 @@ else:
     installed_version=p.installed.version
     candidate = p.candidate
     candidate_version=p.candidate.version
-    print 'Looking up ',a, ' version ',candidate_version
+    print('Looking up ',a, ' version ',candidate_version)
     for origin in p.candidate.origins:
       arch=candidate.architecture
       if not candidate.uris :
-        print 'Sorry, cannot find an URI to download the debian package of ',a
+        print('Sorry, cannot find an URI to download the debian package of ',a)
         continue
       deb_uri = candidate.uri
-      deb_path=string.split(deb_uri,'/')
-      deb_path=string.join(deb_path[(deb_path.index('pool')):],'/')
+      deb_path=str.split(deb_uri, os.path.sep)
+      deb_path=str.join(os.path.sep, deb_path[(deb_path.index('pool')):] )
 
-      print " One of the archives for this package has this info "
-      print "  Origin  ",origin.origin
-      print "  Archive ",origin.archive
-      print "  Label   ",origin.label
-      print "  Site    ",origin.site
+      print(" One of the archives for this package has this info ")
+      print("  Origin  ",origin.origin)
+      print("  Archive ",origin.archive)
+      print("  Label   ",origin.label)
+      print("  Site    ",origin.site)
       #print " Component ",origin.component  is not used below
       #print " Code Name ", is not available in Python APT interface AFAICS
 
@@ -85,11 +83,11 @@ else:
                                              PackageName=p.name)
 
       if delta_uri_base == None:
-        print '  Sorry, sources.conf does not provide a server for this archive'
+        print('  Sorry, sources.conf does not provide a server for this archive')
         continue
 
       if installed_version == candidate_version:
-        print '  Sorry, this package is already at its newest version for this archive'
+        print('  Sorry, this package is already at its newest version for this archive')
         continue
 
       #delta name
@@ -99,4 +97,4 @@ else:
 
       uri=delta_uri_base+'/'+os.path.dirname(deb_path)+'/'+delta_name
 
-      print '  The package ',a,' may be upgraded by using: ', uri
+      print('  The package ',a,' may be upgraded by using: ', uri)
