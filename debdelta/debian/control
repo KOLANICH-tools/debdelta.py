@@ -9,8 +9,8 @@ Vcs-git: https://salsa.debian.org/mennucc1/debdelta.git
 
 Package: debdelta
 Architecture: any
-Depends: python, bzip2, binutils, ${shlibs:Depends}
-Recommends: python-apt, xdelta3, xdelta, lzma, xz-utils, xdelta, bsdiff, gnupg2, gnupg-agent, python-debian
+Depends: python3, bzip2, binutils, ${shlibs:Depends}
+Recommends: python3-apt, xdelta3, xdelta, lzma, xz-utils, xdelta, bsdiff, gnupg2, gnupg-agent, python3-debian
 Conflicts: xdelta3 (<< 0y.dfsg-1)
 Enhances: cupt
 Suggests: debdelta-doc
