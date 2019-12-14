@@ -17,6 +17,8 @@ EMAIL="mennucc1@debian.org"
 #  more common error messages are translated,
 #    e.g.: out of disk space while using debdelta-upgrade , file does not exist...
 
+import sys
+
 try:
   import gettext
   gettext.bindtextdomain('debdelta','/usr/share/locale')
@@ -124,7 +126,7 @@ minibzip2='/usr/lib/debdelta/minibzip2'
 
 ####################################################################
 
-import sys , os , tempfile , string ,getopt , tarfile , shutil , time, traceback, subprocess, time, tarfile, stat, hashlib, random, gzip
+import os , tempfile , string ,getopt , tarfile , shutil , time, traceback, subprocess, time, tarfile, stat, hashlib, random, gzip
 
 try:
   import ConfigParser
