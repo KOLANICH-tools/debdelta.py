@@ -398,9 +398,9 @@ for i in DISABLED_FEATURES:
     raise SystemExit(3)
 
 try:
-  BOGOMIPS=float(subprocess.Popen('grep bogomips /proc/cpuinfo',
-                                  shell=True, stdout=subprocess.PIPE).
-                 stdout.read().split(':')[-1])
+  a = subprocess.Popen(b'grep bogomips /proc/cpuinfo',shell=True, stdout=subprocess.PIPE).stdout.read()
+  a = bytes2str(a)
+  BOGOMIPS=float(a.split(':')[-1])
 except:
   if VERBOSE:
     sys.stderr.write(' Warning, /proc not mounted, using bogus BOGOMIPS\n')
