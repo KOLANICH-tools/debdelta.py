@@ -1639,7 +1639,7 @@ def do_patch(delta,olddeb,newdeb, info=None, diversions=None, do_gpg=DO_GPG):
 def do_patch_(delta, olddeb, newdeb, TD, runtime,
               info=None, diversions=None, do_gpg=DO_GPG, do_progress=DO_PROGRESS):
   
-  import thread, threading
+  import threading
   
   if TD[-1] != '/':
     TD = TD + '/'
@@ -4476,9 +4476,17 @@ def delta_upgrade_(args):
   
   original_cwd = os.getcwd()
 
-  import thread, threading, Queue, urllib2, fcntl, atexit, signal
+  import threading,  fcntl, atexit, signal
+  if sys.version_info.major == 2:
+    import Queue, urllib2, thread
+    proxies=urllib2.getproxies()
+  else:
+    import queue as Queue
+    import _thread as thread
+    #import urllib as urllib2
+    #FIXME
+    proxies = []
 
-  proxies=urllib2.getproxies()
   if VERBOSE and proxies:
     #note that this message is indented, I dont know what's best in translations
     logger.warn(_(' Proxy settings detected in the environment; using "urllib2" for downloading; but\n  this disables some features and is in general slower and buggier. See man page.'))
