@@ -649,9 +649,9 @@ class cache_same_dict(cache_sequence):
 
 #####################################################################
 
-ALLOWED = '<>()[]{}.,;:!_-+/ abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
+ALLOWED = b'<>()[]{}.,;:!_-+/ abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
 
-ECHO_TEST = r"""c='\0151\0141'
+ECHO_TEST = br"""c='\0151\0141'
 E='echo -ne'
 if test c`$E 'i'"$c" `o = ciiao  ; then
  :
@@ -667,7 +667,7 @@ else
 fi
 """
 
-def prepare_for_echo__(s):
+def prepare_for_echo_py2_(s):
   assert ( type (s) in string_types )
   r=''
   shortquoted=False
@@ -686,8 +686,38 @@ def prepare_for_echo__(s):
       shortquoted = len(a) < 5
   return r
 
+def prepare_for_echo_py3_(s):
+  assert ( type (s) in string_types )
+  if isinstance(s,str):
+    s = str2bytes(s)
+  r=b''
+  O = lambda x : str2bytes(oct(x)[2:])
+  shortquoted=False
+  for a in s:
+    if a in ALLOWED :
+      r += bytes([a])
+      shortquoted = False
+    elif a in b'0123456789' :
+      if shortquoted :
+        a = b"\\" + (b'000' +  O(a) )[-4:]
+        r += a
+        shortquoted = False
+      else:
+        r += bytes([a])
+    else:
+      a = b"\\0" + O(a)
+      r += a
+      shortquoted = len(a) < 5
+  return r
+
+if sys.version_info.major == 2:
+  prepare_for_echo__ = prepare_for_echo_py2_
+else:
+  prepare_for_echo__ = prepare_for_echo_py3_
+
+
 def apply_prepare_for_echo(shell,repres):
-    a=ECHO_TEST  + " $E '" + repres +  "' \n exit "
+    a=ECHO_TEST  + b" $E '" + repres +  b"' \n exit "
     p = subprocess.Popen([shell], stdin=subprocess.PIPE, stdout=subprocess.PIPE, close_fds=True)
     (i, o) = (p.stdout, p.stdin)
     o.write(a)
@@ -697,17 +727,17 @@ def apply_prepare_for_echo(shell,repres):
     return a
 
 #ack! I wanted to use 'dash' as preferred shell, but bug 379227 stopped me
-SHELL = '/bin/bash'
+SHELL = b'/bin/bash'
 #check my code
-s='\x00'+'1ciao88\n77\r566'+'\x00'+'99\n'
+s=b'\x00'+b'1ciao88\n77\r566'+b'\x00'+b'99\n'
 r=prepare_for_echo__(s)
 a=apply_prepare_for_echo(SHELL,r)
 if a != s :
-    sys.stderr.write( 'string='+repr(s))
-    sys.stderr.write( 'repres='+repr(r))
-    sys.stderr.write( 'shell='+SHELL)
-    sys.stderr.write( 'output='+repr(a))
-    sys.stderr.write( 'Errror in prepare_for_echo.')
+    sys.stderr.write( 'string='+repr(s)+'\n')
+    sys.stderr.write( 'repres='+repr(r)+'\n')
+    sys.stderr.write( 'shell='+repr(SHELL)+'\n')
+    sys.stderr.write( 'output='+repr(a)+'\n')
+    sys.stderr.write( 'Errror in prepare_for_echo.\n')
     raise SystemExit(4)
 del r,s,a
 
@@ -721,7 +751,7 @@ def prepare_for_echo(s):
             z = 'Error in prepare_for_echo()\n'
             z += 'string='+repr(s)+'\n'
             z += 'repres='+repr(r)+'\n'
-            z += 'shell='+SHELL+'\n'
+            z += 'shell='+repr(SHELL)+'\n'
             z += 'output='+repr(a)+'\n'
             raise DebDeltaError(z, exitcode=4)
     return r
