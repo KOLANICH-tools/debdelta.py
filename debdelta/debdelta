@@ -165,6 +165,8 @@ else:
   string_types = (str, bytes)  # python3
   #
   from configparser import ConfigParser
+  #
+  long = int
   def str2bytes(a):
     return a.encode('UTF-8')
   def bytes2str(b):
