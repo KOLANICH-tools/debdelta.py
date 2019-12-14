@@ -126,7 +126,7 @@ minibzip2='/usr/lib/debdelta/minibzip2'
 
 ####################################################################
 
-import os , tempfile , string ,getopt , tarfile , shutil , time, traceback, subprocess, time, tarfile, stat, hashlib, random, gzip
+import os , tempfile , getopt , tarfile , shutil , time, traceback, subprocess, time, tarfile, stat, hashlib, random, gzip
 
 
 
@@ -156,10 +156,19 @@ if sys.version_info.major == 2:
   string_types = (str, unicode)  # python2
   #
   from ConfigParser import SafeConfigParser as ConfigParser
+  #
+  def str2bytes(a):
+    return a
+  def bytes2str(b):
+    return b
 else:
   string_types = (str, bytes)  # python3
   #
   from configparser import ConfigParser
+  def str2bytes(a):
+    return a.encode('UTF-8')
+  def bytes2str(b):
+    return b.decode('UTF-8')
 
 def get_termsize():
   import termios, fcntl, struct
@@ -717,17 +726,16 @@ def prepare_for_echo(s):
 
 #####################################################################
 
-from string import join
 
 def version_mangle(v):
   if  ':' in v :
-    return join(v.split(':'),'%3a')
+    return str.join('%3a',v.split(':'))
   else:
     return v
   
 def version_demangle(v):
   if  '%' in v :
-    return join(v.split('%3a'),':')
+    return str.join(':',v.split('%3a'))
   else:
     return v
 
@@ -1515,7 +1523,7 @@ def forensic_send(f,forensic=FORENSIC):
     logger.warning(_('Faulty delta. Please send by email to %s the following files:\n') % EMAIL)
     for z in f:
       if z:
-        logger.warning(' '+string.join(z,' ')+'\n')
+        logger.warning(' '+str.join(' ',z)+'\n')
     return
   logger.warning(_('(Faulty delta. Please consider retrying with the option "--forensic=do" ).')+'\n')
 
@@ -2389,7 +2397,7 @@ def do_delta_(olddeb, newdeb, delta, TD, forensic_file=None, info=[]):
     def zip_piped(self, cn, newhead=None):
       "inverts the unzip() function, with piped behaviour"
       if cn == '.gz' :
-        cmd=string.join(self.gz_command,' ')
+        cmd=str.join(' ',self.gz_command)
         if newhead:
           s=prepare_for_echo(newhead)
           self.fd.write("($E '"+ s +"' && "+cmd+" | tail -c +"+str(len(newhead)+1)+')')
@@ -2960,7 +2968,7 @@ def do_delta_(olddeb, newdeb, delta, TD, forensic_file=None, info=[]):
     b=subprocess.Popen(['xz','-vv','--robot','--list',z.name],stdout=subprocess.PIPE)
     for a in b.stdout:
       a=a.rstrip('\n')
-      a=string.split(a,'\t')
+      a=str.split(a,'\t')
       if a[0]=='block':
         if crc and crc != a[9]:
           logger.warn("  warning : this xz -- compressed file was compressed with variable blocks crc ?! '%s' != '%s'",crc,a[9])
@@ -3691,7 +3699,7 @@ def iterate_Packages(packages, use_debian_822=True):
     except ValueError:
       logger.error('Error: pathname "%s" does not contain "dists"\n' % packages)
       return
-    base = string.join(dir[:a],'/')
+    base = str.join('/',dir[:a])
     #
     cache=cache_same_dict(packages, fields)
     if DO_CACHE and cache.exists:
@@ -4453,7 +4461,7 @@ def delta_upgrade_(args):
   warnings.simplefilter("ignore",FutureWarning)
   
   if DO_PROGRESS:
-    sys.stderr.write(string.ljust(_('Initializing APT cache...'),terminalcolumns)+'\r')
+    sys.stderr.write((_('Initializing APT cache...')).ljust(terminalcolumns)+'\r')
   elif VERBOSE:
     logger.debug(_('Initializing APT cache...'))
   
@@ -4483,7 +4491,7 @@ def delta_upgrade_(args):
       return str(int(a/1024/1024))+'MB'
   
   if DO_PROGRESS:
-    sys.stderr.write(string.ljust(_('Upgrading APT cache...'),terminalcolumns)+'\r')
+    sys.stderr.write((_('Upgrading APT cache...')).ljust(terminalcolumns)+'\r')
   elif VERBOSE:
     logger.debug(_('Upgrading APT cache...'))
 
@@ -4492,13 +4500,13 @@ def delta_upgrade_(args):
     cache.upgrade(True)
   except:
     if DO_PROGRESS:
-      sys.stderr.write(string.ljust(_('Failed! Safe upgrading APT cache...'),terminalcolumns)+'\r')
+      sys.stderr.write((_('Failed! Safe upgrading APT cache...')).ljust(terminalcolumns)+'\r')
     elif VERBOSE:
       logger.debug(_('Failed! Safe upgrading APT cache...'))
     cache.upgrade(False)
 
   if DO_PROGRESS:
-    sys.stderr.write(string.ljust(_('Upgraded APT cache.'),terminalcolumns)+'\r')
+    sys.stderr.write((_('Upgraded APT cache.')).ljust(terminalcolumns)+'\r')
   elif VERBOSE:
     logger.debug(_('Upgraded APT cache.'))
 
@@ -4584,7 +4592,7 @@ def delta_upgrade_(args):
             msg=_("Created,    time %(time)5.2fsec, speed %(speed)4s/sec, %(name)s")
             msgdata={'time' : a, 'speed' : SizeToKibiStr(l / (a+0.001)), 'name' : os.path.basename(newdeb)}
             if DO_PROGRESS:
-              sys.stderr.write(string.ljust(msg % msgdata, terminalcolumns)+'\n')
+              sys.stderr.write((msg % msgdata).ljust(terminalcolumns)+'\n')
             else:
               logger.info(msg % msgdata)
           except KeyboardInterrupt:
@@ -4899,7 +4907,7 @@ def delta_upgrade_(args):
       msg=_("Downloaded, time %(time)5.2fsec, speed %(speed)4s/sec, %(name)s")
       msgdata={'time' : a , 'speed' : SizeToKibiStr(j / (a+0.001)) , 'name' : os.path.basename(uri)}
       if DO_PROGRESS:
-        sys.stderr.write(string.ljust(msg % msgdata, terminalcolumns)+'\n')
+        sys.stderr.write((msg % msgdata).ljust(terminalcolumns)+'\n')
       else:
         logger.info(msg % msgdata)
       
@@ -4948,8 +4956,7 @@ def delta_upgrade_(args):
     if DO_PROGRESS :
       progress_count+=1
       if 0 == (progress_count & 2047):
-        sys.stderr.write(string.ljust('%2.1f%%' % (float(progress_count) * 100.0 / len(cache)),
-                                       terminalcolumns) + '\r')
+        sys.stderr.write(('%2.1f%%' % (float(progress_count) * 100.0 / len(cache))).ljust(terminalcolumns) + '\r')
 
     if is_installed(p) and marked_upgrade(p) :
       if args and p.name not in args:
@@ -4962,13 +4969,13 @@ def delta_upgrade_(args):
       installed_version=p.installed.version
       candidate_version=p.candidate.version
       newsize=p.candidate.size
-      deb_path=string.split(deb_uri,'/')
+      deb_path=str.split(deb_uri,'/')
       try:
         thepoolindex=deb_path.index('pool')
       except ValueError:
         logger.warn('! Package "%s" (version %s) does not have "pool" in the uri %s \n' % (p.name, candidate_version, deb_uri))
         continue
-      deb_path=string.join(deb_path[(thepoolindex):],'/')
+      deb_path=str.join('/',deb_path[(thepoolindex):])
       
       #try all possible variants of the filename
       newdebs=[p.shortname+'_'+candidate_version+'_'+arch+'.deb',
@@ -5031,9 +5038,8 @@ def delta_upgrade_(args):
       #if not, download its first part
 
       if DO_PROGRESS:
-        sys.stderr.write(string.ljust('%2.1f%% ' % (float(progress_count) * 100.0 / len(cache)) + \
-                                        _('Downloading head of %s...') % p.name,
-                                      terminalcolumns) + '\r')
+        sys.stderr.write(('%2.1f%% ' % (float(progress_count) * 100.0 / len(cache)) + \
+                                        _('Downloading head of %s...') % p.name).ljust(terminalcolumns) + '\r')
       deltas_down_time-=time.time()
       status, tempname, l, complete = download_10k_uri(uri,abs_delta_name)
       deltas_down_time+=time.time()
@@ -5091,8 +5097,8 @@ def delta_upgrade_(args):
       if VERBOSE > 1:
           logger.debug('Delta is present: %r %r', delta_name, tempname)
       elif DO_PROGRESS:
-          sys.stderr.write(string.ljust('%2.1f%%' % (float(progress_count) * 100.0 / len(cache)) + \
-                                          _('Downloaded head of %s.') % p.name, terminalcolumns) + '\r')
+          sys.stderr.write(('%2.1f%%' % (float(progress_count) * 100.0 / len(cache)) + \
+                            _('Downloaded head of %s.') % p.name).ljust(terminalcolumns) + '\r')
 
       if os.path.isfile(tempname):
         deltas_down_size+=os.path.getsize(tempname)
@@ -5416,8 +5422,8 @@ elif action == 'patch-url':
     deb_uri = candidate.uri
     installed_version=p.installed.version
     candidate_version=p.candidate.version
-    deb_path=string.split(deb_uri,'/')
-    deb_path=string.join(deb_path[(deb_path.index('pool')):],'/')
+    deb_path=str.split(deb_uri,'/')
+    deb_path=str.join('/',deb_path[(deb_path.index('pool')):])
 
     delta_uri_base=delta_uri_from_config(config,
                                          Origin=origin.origin,
