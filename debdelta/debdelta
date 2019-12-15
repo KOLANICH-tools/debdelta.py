@@ -4493,7 +4493,7 @@ def delta_upgrade_(args):
     from httplib import HTTPConnection, HTTPException
     def http_responses_get(j):
       import httplib
-      return http_responses_get(j,str(j))
+      return httplib.responses.get(j,str(j))
     from urlparse import urlparse, urlunparse
     from urllib2 import quote as urlquote
     proxies=urllib2.getproxies()
