@@ -154,6 +154,8 @@ logger=logging.getLogger(__name__)
 
 if sys.version_info.major == 2:
   string_types = (str, unicode)  # python2
+  # flags for subprocess.Popen
+  Popen_args = {}
   #
   from ConfigParser import SafeConfigParser as ConfigParser
   #
@@ -163,6 +165,8 @@ if sys.version_info.major == 2:
     return b
 else:
   string_types = (str, bytes)  # python3
+  # flags for subprocess.Popen to open stdin,stdout as text streams
+  Popen_args = {'text':True}
   #
   from configparser import ConfigParser
   #
@@ -908,8 +912,8 @@ def check_deb(f):
     die(_("Error: the file `%s' does not exist.") % f)
   if not  os.path.isfile(f) :
     die(_("Error: `%s' is not a regular file.") % f)
-  p=open(f)
-  if p.read(21) != "!<arch>\ndebian-binary" :
+  p=open(f,'rb')
+  if p.read(21) != b"!<arch>\ndebian-binary" :
     die(_("Error: `%s' does not seem to be a Debian package.") % f)
   p.close()
 
@@ -918,8 +922,8 @@ def check_is_delta(f):
     die(_("Error: the file `%s' does not exist.") % f)
   if not  os.path.isfile(f) :
     die(_("Error: `%s' is not a regular file.") % f)
-  p=open(f)
-  if p.read(8) != "!<arch>\n" :
+  p=open(f,'rb')
+  if p.read(8) != b"!<arch>\n" :
     die(_("Error: `%s' does not seem to be a Debian delta.") % f)
   p.close()
 
@@ -953,7 +957,7 @@ def compute_md5_up_to_len(o, length):
   "hash initial part of a file using MD5. 'o' may be a string (in which case the file is opened) or a file type; returns MD5 and bytes effectively read"
   assert type(length) in (int,long) and length >= 0
   if type(o) in string_types:
-    o = open(o)
+    o = open(o,'rb')
   m=hashlib.md5()
   a=True
   l=length
@@ -967,7 +971,7 @@ def compute_md5_up_to_len(o, length):
 def compute_md5_len(o):
   "hash the file using MD5. 'o' may be a string (in which case the file is opened) or a file type; returns MD5 and length"
   if type(o) in string_types:
-    o = open(o)
+    o = open(o,'rb')
   m=hashlib.md5()
   a=o.read(1024)
   l=0
@@ -983,7 +987,7 @@ def compute_md5(o):
 
 def _compute_hashes_(na):
   "hash the file"
-  o = open(na)
+  o = open(na,'rb')
   m=hashlib.md5()
   s=hashlib.sha1()
   a=o.read(1024)
@@ -1001,8 +1005,8 @@ def _compute_hashes_db_(li,DIR):
   return db
 
 def verify_signature(signature, DIR):
-  a="-----BEGIN PGP SIGNED MESSAGE-----\n"
-  if open(signature).read(len(a)) != a:
+  a=b"-----BEGIN PGP SIGNED MESSAGE-----\n"
+  if open(signature,'rb').read(len(a)) != a:
     return ('BAD_FORMAT',signature)
 
   role=os.path.basename(signature)
@@ -1012,7 +1016,8 @@ def verify_signature(signature, DIR):
   (temp_fd, temp_name) = tempfile.mkstemp(prefix="debdelta_gpg_verified")
   #(read_end, write_end) = os.pipe()
   p=subprocess.Popen(gpg_base_commandline() + ['--batch','--status-fd',"2",'--output',"-",signature],
-                     stdout=subprocess.PIPE, stderr=temp_fd, stdin=open(os.devnull), close_fds=True)
+                     stdout=subprocess.PIPE, stderr=temp_fd, stdin=open(os.devnull), close_fds=True,
+                     **Popen_args)
   r=_verify_signature_no_gpg(p.stdout, DIR, role)
   p.wait()
   
@@ -1151,9 +1156,9 @@ def get_info_slow(delta,T=None):
   return info
 
 def get_info_fast(delta):
-  f=open(delta)
+  f=open(delta,'rb')
   s=f.readline()
-  if  "!<arch>\n" != s :
+  if  b"!<arch>\n" != s :
     raise DebDeltaError('This is not a delta file: '+delta)
   s = f.read(60)
   if len(s) != 60 :
@@ -1169,7 +1174,7 @@ def get_info_fast(delta):
     logger.warning('(Warning, cannot get info from  '+delta+' , format not known)')
     return None
   l=int(s[ -12:-2 ])
-  s=f.read(l)
+  s=bytes2str(f.read(l))
   if len(s) != l :
     logger.warning('(Warning, cannot get info from truncated: '+delta+' )')
     return None
@@ -1403,7 +1408,7 @@ def tarinfo_to_ls(tartype,tarmode):
 def sha1_hash_file(f):
     s=hashlib.sha1()
     if type(f) in string_types:
-      f=open(f)
+      f=open(f,'rb')
     a=f.read(1024)
     while a:
       s.update(a)
@@ -1564,7 +1569,7 @@ def forensic_send(f,forensic=FORENSIC):
 def elf_info(f):
   "returns (is_elf, ei_class, ei_data, ei_osabi, e_type)"
   import struct
-  elfheader=open(f).read(32)
+  elfheader=open(f,'rb').read(32)
   if len(elfheader) == 32:
     #parse as specified in /usr/include/elf.h from libelf-dev
     EI_CLASS={1:'ELFCLASS32',
@@ -1589,7 +1594,7 @@ def elf_info(f):
         struct.unpack_from('4sBBBBB',elfheader)
     e_type, e_machine, e_version = struct.unpack_from('HHI',elfheader,16)
     #FIXME I think I am getting ei_osabi wrong.. it is always 0
-    is_elf = '\x7fELF' == ei_magic 
+    is_elf = b'\x7fELF' == ei_magic 
     #and ei_class in (1,2) and \
     #    ei_version == 1 and \
     #    ei_data in (1,2) and e_type>0 and e_machine>0 and e_version>0
@@ -1855,7 +1860,8 @@ def do_patch_(delta, olddeb, newdeb, TD, runtime,
           #unfortunately 'prelink -o' sometimes alters files, see http://bugs.debian.org/627932
           shutil.copy2(divert, tmpcopy)
           proc=subprocess.Popen(["/usr/sbin/prelink","-u",tmpcopy],stdin=open(os.devnull),\
-                                stdout=subprocess.PIPE,stderr=subprocess.STDOUT,close_fds=True)
+                                stdout=subprocess.PIPE,stderr=subprocess.STDOUT,
+                                close_fds=True, **Popen_args)
           out=proc.stdout.read().strip()
           proc.wait()
           if proc.returncode:
@@ -2223,7 +2229,7 @@ def do_patch_(delta, olddeb, newdeb, TD, runtime,
     if DO_MD5:
       if 'NEW/MD5sum' in params:
         if VERBOSE > 1 : logger.debug('  verifying MD5  for %r',os.path.basename(newdeb or delta))
-        m= compute_md5(open(TD+'NEW.file'))
+        m= compute_md5(open(TD+'NEW.file','rb'))
         if params['NEW/MD5sum'] != m :
           f=fore()
           raise DebDeltaError(' MD5 mismatch, '+repr(params['NEW/MD5sum'])+' != ' + repr(m) , logs=f)
@@ -2796,35 +2802,36 @@ def do_delta_(olddeb, newdeb, delta, TD, forensic_file=None, info=[]):
 
   def cmp_gz(o,n):
     "compare gzip files, ignoring header; returns first different byte (+-10), or True if equal"
-    of=open(o)
-    nf=open(n)
+    of=open(o,'rb')
+    nf=open(n,'rb')
     oa=of.read(10)
     na=nf.read(10)
-    if na[:3] != '\037\213\010' :
+    myord = ord if sys.version_info.major == 2 else (lambda x:x)
+    if na[:3] != b'\037\213\010' :
       logger.warning(' Warning: was not created with gzip: %r',n)
       nf.close() ; of.close() 
       return 0
-    if oa[:3] != '\037\213\010' :
+    if oa[:3] != b'\037\213\010' :
       logger.warning(' Warning: was not created with gzip: %r',o)
       nf.close() ; of.close() 
       return 0
-    oflag=ord(oa[3])
+    oflag=myord(oa[3])
     if oflag & 0xf7:
       logger.warning(' Warning: unsupported  .gz flags: %r %r',oct(oflag),o)
     if oflag & 8 : #skip orig name
       oa=of.read(1)
-      while ord(oa) != 0:
+      while myord(oa) != 0:
         oa=of.read(1)
     l=10
-    nflag=ord(na[3])
+    nflag=myord(na[3])
     if nflag & 0xf7:
       logger.warning(' Warning: unsupported  .gz flags: %r %r',oct(nflag),n)
     if nflag & 8 : #skip orig name
       na=nf.read(1)
-      s=na
-      while ord(na) != 0:
+      #s=na
+      while myord(na) != 0:
         na=nf.read(1)
-        s+=na
+        #s+=na
       l+=len(s)
       #print repr(s)
     while oa and na:
@@ -2838,8 +2845,9 @@ def do_delta_(olddeb, newdeb, delta, TD, forensic_file=None, info=[]):
   
   def parse_gzip_header(n):
     " n may be a file name, a function returning a stream, or a stream"
+    myord = ord if sys.version_info.major == 2 else (lambda x:x)
     if type(n) in string_types:
-      f=open(TD+n)
+      f=open(TD+n,'rb')
       a=f.read(10)
       f.close()
     elif type(n) in (FunctionType,LambdaType):
@@ -2848,10 +2856,10 @@ def do_delta_(olddeb, newdeb, delta, TD, forensic_file=None, info=[]):
       if isinstance(f,PopenPipe): f.close()
     else:
       a=n.read(10)
-    if a[:3] != '\037\213\010' :
+    if a[:3] != b'\037\213\010' :
       logger.debug(' Warning: was not created with gzip: %r',n)
       return
-    flag=ord(a[3]) # mostly ignored  :->
+    flag=myord(a[3]) # mostly ignored  :->
     orig_name='-n'
     if flag & 8:
       orig_name='-N'
@@ -2859,7 +2867,7 @@ def do_delta_(olddeb, newdeb, delta, TD, forensic_file=None, info=[]):
       logger.debug(' Warning: unsupported  .gz flags: %r %r',oct(flag),n)
     #a[4:8] #mtime ! ignored ! FIXME will be changed... 
     #from deflate.c in gzip source code
-    format=ord(a[8])
+    format=myord(a[8])
     FAST=4
     SLOW=2 #unfortunately intermediate steps are lost....
     pack_level=6
@@ -2872,8 +2880,8 @@ def do_delta_(olddeb, newdeb, delta, TD, forensic_file=None, info=[]):
     else:
       logger.debug(' Warning: unsupported compression .gz format: %r %r',oct(format),n)
       return
-    if a[9] != '\003' :
-      if VERBOSE : logger.debug(' Warning: unknown OS in .gz format: %r %r',oct(ord(a[9])),n)
+    if myord(a[9]) != 3 :
+      if VERBOSE : logger.debug(' Warning: unknown OS in .gz format: %r %r',oct(myord(a[9])),n)
     pack_list=[1,2,3,4,5,6,7,8,9]
     del pack_list[pack_level-1]
     pack_list.append(pack_level)
@@ -2901,7 +2909,7 @@ def do_delta_(olddeb, newdeb, delta, TD, forensic_file=None, info=[]):
     #OK, it seems we can play our trick
     p='_tmp_'
     #unzip new file
-    pro=subprocess.Popen(('zcat',TD+n),stdout=open(TD+p+'.new','w'), cwd=TD)
+    pro=subprocess.Popen(('zcat',TD+n),stdout=open(TD+p+'.new','wb'), cwd=TD)
     pro.wait()
     if pro.returncode: raise DebDeltaError('argghh, zcat failed on us')
     #test our ability of recompressing
@@ -2910,7 +2918,7 @@ def do_delta_(olddeb, newdeb, delta, TD, forensic_file=None, info=[]):
     for i in pack_list:
       #force -n  ... no problem with timestamps
       gzip_flags="-"+str(i)
-      pro=subprocess.Popen(("gzip",'-c','-n',gzip_flags,TD+p+'.new'),stdout=open(TD+p+'.faked.gz','w'))
+      pro=subprocess.Popen(("gzip",'-c','-n',gzip_flags,TD+p+'.new'),stdout=open(TD+p+'.faked.gz','wb'))
       pro.wait()
       if pro.returncode: DebDeltaError('Argh, gzip failed on us')
       r=cmp_gz(TD+n,TD+p+'.faked.gz')
@@ -2926,7 +2934,7 @@ def do_delta_(olddeb, newdeb, delta, TD, forensic_file=None, info=[]):
       os.unlink(TD+p+".new") ; os.unlink(TD+p+'.faked.gz')
       return
     #actual delta of decompressed files
-    pro=subprocess.Popen(('zcat',TD+o),stdout=open(TD+p+'.old','w'), cwd=TD)
+    pro=subprocess.Popen(('zcat',TD+o),stdout=open(TD+p+'.old','wb'), cwd=TD)
     pro.wait()
     if pro.returncode: raise DebDeltaError('argh, zcat failed on us')
     script.write("zcat '"+o+"' > "+p+".old ; rm '"+o+"' \n")
@@ -2950,7 +2958,7 @@ def do_delta_(olddeb, newdeb, delta, TD, forensic_file=None, info=[]):
     if type(o) in (FunctionType,LambdaType):
       o=o()
     elif type(o) in string_types:
-      o=open(o)
+      o=open(o,'rb')
     z=tempfile.NamedTemporaryFile(suffix='.gz',delete=False)
     shutil.copyfileobj(o,z)
     z.flush()
@@ -2968,7 +2976,7 @@ def do_delta_(olddeb, newdeb, delta, TD, forensic_file=None, info=[]):
         wcmd.append('-'+str(par))
         if VERBOSE > 2 : logger.debug('   Testing command %r',wcmd)
         w=PopenPipe(['zcat',z.name,'|']+wcmd+['|','cmp','-',z.name],\
-                    stdout=open(os.devnull,'w'),stderr=open(os.devnull,'w'),close_fds=True)
+                    stdout=open(os.devnull,'w'),stderr=open(os.devnull,'wb'),close_fds=True)
         redo=False
         w.wait()
         if w.returncode :
@@ -2993,13 +3001,14 @@ def do_delta_(olddeb, newdeb, delta, TD, forensic_file=None, info=[]):
     if type(o) in (FunctionType,LambdaType):
       o=o()
     elif type(o) in string_types:
-      o=open(o)
+      o=open(o,'rb')
     z=tempfile.NamedTemporaryFile(suffix='.xz',delete=False)
     #unfortunately 'xz --list' does not work on pipes!
     shutil.copyfileobj(o,z)
     z.flush()
     if isinstance(o,PopenPipe): o.close()
-    b=subprocess.Popen(['xz','-vv','--robot','--list',z.name],stdout=subprocess.PIPE)
+    b=subprocess.Popen(['xz','-vv','--robot','--list',z.name],stdout=subprocess.PIPE,
+                       **Popen_args)
     for a in b.stdout:
       a=a.rstrip('\n')
       a=str.split(a,'\t')
@@ -3041,7 +3050,7 @@ def do_delta_(olddeb, newdeb, delta, TD, forensic_file=None, info=[]):
         if VERBOSE > 2 : logger.debug('   Testing XZ options %r',w)
         redo=False
         c=PopenPipe(['unxz','-c',z.name,'|']+w+['|','cmp','-',z.name],\
-                    stdout=open(os.devnull,'w'),stderr=open(os.devnull,'w'),close_fds=True)
+                    stdout=open(os.devnull,'wr'),stderr=open(os.devnull,'wr'),close_fds=True)
         c.wait()
         if c.returncode :
           redo=True
@@ -3242,7 +3251,7 @@ def do_delta_(olddeb, newdeb, delta, TD, forensic_file=None, info=[]):
         pass
     ###### scan the new tarfile, save info regarding regular files therein
     #save header part of new_filename, since it changes in newer versions
-    f=open(TD+new_filename)
+    f=open(TD+new_filename,'rb')
     new_file_zip_head=f.read(20)
     f.close()
     (new_filename,new_filename_ext) = unzip(new_filename)
@@ -3355,12 +3364,12 @@ def do_delta_(olddeb, newdeb, delta, TD, forensic_file=None, info=[]):
     
     current_chunk_name=a_numb_file.next()
     script.start_chunk(current_chunk_name)
-    mega_cat=open(TD+'/'+current_chunk_name,'w')
+    mega_cat=open(TD+'/'+current_chunk_name,'wb')
     
     #helper function
     def _append_(p, w, rm):
       mega_cat.write(w+fake_tar_2nd)
-      f=open(TD+p+'/'+w)
+      f=open(TD+p+'/'+w,'rb')
       a=f.read(1024)
       while a:
         try:
@@ -3382,9 +3391,9 @@ def do_delta_(olddeb, newdeb, delta, TD, forensic_file=None, info=[]):
     def mega_cat_chunk(oldoffset,newoffset, background=True):
       global something_backgrounded
       p = a_numb_file.next()
-      f=open(TD+new_filename)
+      f=open(TD+new_filename,'rb')
       f.seek(oldoffset)
-      of=open(TD+p,'w')
+      of=open(TD+p,'wb')
       l=oldoffset
       while l<newoffset:
         s=f.read(512)
@@ -3450,7 +3459,7 @@ def do_delta_(olddeb, newdeb, delta, TD, forensic_file=None, info=[]):
         #start a new chunk
         current_chunk_name=a_numb_file.next()
         script.start_chunk(current_chunk_name)
-        mega_cat=open(TD+'/'+current_chunk_name,'w')
+        mega_cat=open(TD+'/'+current_chunk_name,'wb')
         #
         progressive_new_offset=newtarinfo.offset
         chunk_discount = min( 1. , chunk_discount * 1.2 )
@@ -3530,10 +3539,10 @@ def do_delta_(olddeb, newdeb, delta, TD, forensic_file=None, info=[]):
   #def delta_debs_using_old(old,new):
 
   ### start scanning the new deb  
-  newdeb_file=open(newdeb)
+  newdeb_file=open(newdeb,'rb')
   # pop the "!<arch>\n"
   s = newdeb_file.readline()
-  assert( "!<arch>\n" == s)
+  assert( b"!<arch>\n" == s)
   append_NEW_file(s)
 
   
@@ -3579,7 +3588,7 @@ def do_delta_(olddeb, newdeb, delta, TD, forensic_file=None, info=[]):
     #add file to delta
     if newsize < 128:      #file is too short to compute a delta,
       append_NEW_file(ar_line)
-      p=open(TD+newname)
+      p=open(TD+newname,'rb')
       append_NEW_file( p.read(newsize))
       p.close()
       unlink(TD+newname)
@@ -3755,7 +3764,7 @@ def iterate_Packages(packages, use_debian_822=True):
       SP=subprocess.Popen(["xzcat",packages], stdout=subprocess.PIPE, stdin=open(os.devnull), close_fds=True)
       F=SP.stdout
     else:
-      F=open(packages)
+      F=open(packages,'rb')
       SP=None
     #
     if debian_deb822 and use_debian_822: #use faster implementation
@@ -4899,7 +4908,7 @@ def delta_upgrade_(args):
         #do not truncate preexisting file
         complete=(os.path.getsize(outnametemp) >= l)
         return status, outnametemp, l, complete
-      out=open(outnametemp,'w')
+      out=open(outnametemp,'wb')
       out.write(s)
       out.close()
       return status, outnametemp, l, complete
@@ -4942,7 +4951,7 @@ def delta_upgrade_(args):
       if l and status == 200 :
         logger.warning(' Hmmm... our HTTP range request failed, %r %r %r',re,status,message)
       if status == 200 :
-        out=open(outnametemp,'w')
+        out=open(outnametemp,'wb')
         try:
           total_len = long(responseheaders['Content-Length'])
         except (KeyError,ValueError):
@@ -4950,7 +4959,7 @@ def delta_upgrade_(args):
       elif status == 206 :
         #APT does scanf of    "bytes %lu-%*u/%lu",&StartPos,&Size
         #first-byte-pos "-" last-byte-pos "/" instance-length
-        out=open(outnametemp,'a')
+        out=open(outnametemp,'ab')
         try:
           a,b,total_len =_parse_ContentRange(responseheaders['Content-Range'])
         except (KeyError,ValueError):
@@ -4961,7 +4970,7 @@ def delta_upgrade_(args):
         out.seek(a)
         out.truncate()
       else:
-        out=open(outnametemp,'w')
+        out=open(outnametemp,'wb')
         try:
           total_len=long(responseheaders.get('Content-length'))
         except ValueError:
