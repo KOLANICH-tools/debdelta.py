@@ -2545,7 +2545,6 @@ def do_delta_(olddeb, newdeb, delta, TD, forensic_file=None, info=[]):
       p.close()
       if  VERBOSE  : logger.debug(' '+o+': '+join([o[4:] for o in  s],' '))
       info = info + s
-      del s,p
   info.append('OLD/Size: '+str(olddebsize))
   info.append('NEW/Size: '+str(newdebsize))
   params=info_2_db(info)
@@ -3665,7 +3664,6 @@ def do_delta_(olddeb, newdeb, delta, TD, forensic_file=None, info=[]):
   if s:
     if VERBOSE > 2: logger.debug('   ar leftover character: %r',s)
     append_NEW_file(s)
-  del s
 
   #this is done already from the receiving end
   if DEBUG > 2 and newdeb_md5sum :
