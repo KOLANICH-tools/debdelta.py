@@ -149,7 +149,7 @@ from types import FunctionType, LambdaType
 
 import logging, logging.handlers
 if __name__ == '__main__':
-  logging.basicConfig(format='%(message)s', stream=sys.stdout, level=logging.DEBUG)
+  logging.basicConfig(format='%(message)s', stream=sys.stdout, level=logging.INFO)
 logger=logging.getLogger(__name__)
 
 if sys.version_info.major == 2:
@@ -299,7 +299,9 @@ else:
 
   for  o , v  in  opts :
     if o == '-v' : VERBOSE += 1
-    elif o == '-d' or o == '--debug' : DEBUG += 1
+    elif o == '-d' or o == '--debug' :
+      DEBUG += 1
+      logger.setLevel(logging.DEBUG)
     elif o == '-k' : KEEP = True
     elif o == '--no-act': ACT=False
     elif o == '--no-md5': DO_MD5=False
