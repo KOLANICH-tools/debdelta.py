@@ -2014,7 +2014,7 @@ def do_patch_(delta, olddeb, newdeb, TD, runtime,
   this_deb_format=DEB_FORMAT
   if this_deb_format != 'deb' and 'NEW/data.tar' not in params:
     #this patch does not support streaming
-    logger.warn('Warning, created as standard deb: '+newdeb)
+    logger.warning('Warning, created as standard deb: '+newdeb)
     this_deb_format='deb'
   
   if this_deb_format == 'preunpacked' : #need a fifo
@@ -2227,7 +2227,7 @@ def do_patch_(delta, olddeb, newdeb, TD, runtime,
         if params['NEW/MD5sum'] != m :
           f=fore()
           raise DebDeltaError(' MD5 mismatch, '+repr(params['NEW/MD5sum'])+' != ' + repr(m) , logs=f)
-      else: logger.warn(' Warning! no MD5 was verified for %r',os.path.basename(newdeb or delta))
+      else: logger.warning(' Warning! no MD5 was verified for %r',os.path.basename(newdeb or delta))
   elif this_deb_format == 'unzipped' :
     if DO_MD5:
       c,b,z=untar_control_in_deb(list_ar(TD+'NEW.file'))
@@ -2801,16 +2801,16 @@ def do_delta_(olddeb, newdeb, delta, TD, forensic_file=None, info=[]):
     oa=of.read(10)
     na=nf.read(10)
     if na[:3] != '\037\213\010' :
-      logger.warn(' Warning: was not created with gzip: %r',n)
+      logger.warning(' Warning: was not created with gzip: %r',n)
       nf.close() ; of.close() 
       return 0
     if oa[:3] != '\037\213\010' :
-      logger.warn(' Warning: was not created with gzip: %r',o)
+      logger.warning(' Warning: was not created with gzip: %r',o)
       nf.close() ; of.close() 
       return 0
     oflag=ord(oa[3])
     if oflag & 0xf7:
-      logger.warn(' Warning: unsupported  .gz flags: %r %r',oct(oflag),o)
+      logger.warning(' Warning: unsupported  .gz flags: %r %r',oct(oflag),o)
     if oflag & 8 : #skip orig name
       oa=of.read(1)
       while ord(oa) != 0:
@@ -2818,7 +2818,7 @@ def do_delta_(olddeb, newdeb, delta, TD, forensic_file=None, info=[]):
     l=10
     nflag=ord(na[3])
     if nflag & 0xf7:
-      logger.warn(' Warning: unsupported  .gz flags: %r %r',oct(nflag),n)
+      logger.warning(' Warning: unsupported  .gz flags: %r %r',oct(nflag),n)
     if nflag & 8 : #skip orig name
       na=nf.read(1)
       s=na
@@ -3005,10 +3005,10 @@ def do_delta_(olddeb, newdeb, delta, TD, forensic_file=None, info=[]):
       a=str.split(a,'\t')
       if a[0]=='block':
         if crc and crc != a[9]:
-          logger.warn("  warning : this xz -- compressed file was compressed with variable blocks crc ?! '%s' != '%s'",crc,a[9])
+          logger.warning("  warning : this xz -- compressed file was compressed with variable blocks crc ?! '%s' != '%s'",crc,a[9])
         crc=a[9]
         if par and par != a[15]:
-          logger.warn("  warning : this xz -- compressed file was compressed with variable blocks options ?! '%s' != '%s'",par,a[15])
+          logger.warning("  warning : this xz -- compressed file was compressed with variable blocks options ?! '%s' != '%s'",par,a[15])
         par=a[15]
         if not thread and a[12]=='cu':
           thread='-T2'
@@ -3017,7 +3017,7 @@ def do_delta_(olddeb, newdeb, delta, TD, forensic_file=None, info=[]):
       crc=crc.lower()
       if crc=='sha-256': crc='sha256'
       if crc not in ('crc32','crc64','sha256'):
-        logger.warn(' Unknown XZ crc %r',crc)
+        logger.warning(' Unknown XZ crc %r',crc)
         crc=''
     PARS=['-6e','-9','-9e']
     if par:
@@ -3782,7 +3782,7 @@ def iterate_Packages(packages, use_debian_822=True):
             of=l[10:]
       elif l == '':
         if of == None or pack == None or vers == None or arch == None:
-          logger.warn('Warning, skipping incomplete record in index: %r %r %r',of,pack,vers,arch)
+          logger.warning('Warning, skipping incomplete record in index: %r %r %r',of,pack,vers,arch)
           continue
         if of[-4:] == '.udeb':
           if VERBOSE > 2 : logger.debug('   skip udeb')
@@ -3889,7 +3889,7 @@ def delta_dirname(f,altdir):
     if altdir != None:
       if altdir[-2:] == '//' :
         if '../' in f:
-          logger.warn('Warning: cannot combine .. and // ! Saving in %r', altdir)
+          logger.warning('Warning: cannot combine .. and // ! Saving in %r', altdir)
           return altdir
         #os.path.join has a weird behaviour with absolute paths!
         f=f.lstrip('/')
@@ -4084,7 +4084,7 @@ def do_delta_and_test(old_File, new_File, delta, forensicfile):
         free=freespace(deltadirname)
         newdebsize=os.path.getsize(new_File)
         if free and (free < (newdebsize /2 + 2**15)) :
-          if VERBOSE : logger.warn(' '+(_("Not enough disk space for storing `%s'.")), delta)
+          if VERBOSE : logger.warning(' '+(_("Not enough disk space for storing `%s'.")), delta)
           return (1, None, None, None, [], 'not_enough_disk_space')
         
         if forensicfile and  not os.path.exists(forensicfile):
@@ -4149,10 +4149,10 @@ def do_delta_and_test(old_File, new_File, delta, forensicfile):
             pret=do_patch(deltatmp,old_File,None , info=info_delta, do_gpg=None)
           except DebDeltaError:
             s=sys.exc_info()[1]
-            logger.warn(' '+_('Error: testing of delta failed:')+' '+str(s))
+            logger.warning(' '+_('Error: testing of delta failed:')+' '+str(s))
             if os.path.exists(deltatmp):
               if KEEP:
-                logger.warn(' '+_('You may want to examine:')+' '+str(deltatmp))
+                logger.warning(' '+_('You may want to examine:')+' '+str(deltatmp))
               else:
                 os.unlink(deltatmp)
             if not  s.retriable :
@@ -4167,7 +4167,7 @@ def do_delta_and_test(old_File, new_File, delta, forensicfile):
             puke(" *** Error while testing delta  "+delta,s)
             if os.path.exists(deltatmp):
               if KEEP:
-                logger.warn(' '+_('You may want to examine:')+' '+str(deltatmp))
+                logger.warning(' '+_('You may want to examine:')+' '+str(deltatmp))
               else:
                 os.unlink(deltatmp)
             open(delta+'-fails','w').close()
@@ -4226,11 +4226,11 @@ def do_deltas(debs):
   VersionCompare = init_apt_return_VersionCompare()
   
   if not debs:
-    logger.warn(_('Warning, no non-option arguments, debdeltas does nothing.'))
+    logger.warning(_('Warning, no non-option arguments, debdeltas does nothing.'))
     if not DEBUG:
       return
   elif not OLD and not CLEAN_DELTAS:
-    logger.warn(_('Warning, no --old arguments, debdeltas will not generate any deltas.'))
+    logger.warning(_('Warning, no --old arguments, debdeltas will not generate any deltas.'))
     if not DEBUG:
       return
   
@@ -4370,7 +4370,7 @@ class Predictor:
       basedir='/var/lib/debdelta'
     else:
       if not os.path.exists(os.path.expanduser('~/')):
-        logger.warn('(home directory does not exists, Predictor disabled)')
+        logger.warning('(home directory does not exists, Predictor disabled)')
         return
       basedir=os.path.expanduser('~/.debdelta')
 
@@ -4468,7 +4468,7 @@ def delta_uri_from_config(config, **dictio):
         break
     if match:
       return  config.get( s, 'delta_uri' )
-  if VERBOSE : logger.warn(' '+_("(sources.conf does not provide a server for `%s')"), repr(dictio['PackageName']))
+  if VERBOSE : logger.warning(' '+_("(sources.conf does not provide a server for `%s')"), repr(dictio['PackageName']))
 
 
 
@@ -4510,7 +4510,7 @@ def delta_upgrade_(args):
 
   if VERBOSE and proxies:
     #note that this message is indented, I dont know what's best in translations
-    logger.warn(_(' Proxy settings detected in the environment; using "urllib2" for downloading; but\n  this disables some features and is in general slower and buggier. See man page.'))
+    logger.warning(_(' Proxy settings detected in the environment; using "urllib2" for downloading; but\n  this disables some features and is in general slower and buggier. See man page.'))
   #for example, urllib2 transforms http response "401"  into "404" , and "302" into "200"
   
   config=ConfigParser()
@@ -4833,15 +4833,15 @@ def delta_upgrade_(args):
   def _parse_ContentRange(s):
     #bytes 0-1023/25328
     if not s or s[:6] != "bytes " :
-      logger.warn("Malformed Content-Range %r", s)
+      logger.warning("Malformed Content-Range %r", s)
       return
     a=s[6:].split('/')
     if len(a) != 2 :
-      logger.warn("Malformed Content-Range %r", s)
+      logger.warning("Malformed Content-Range %r", s)
       return
     b=a[0].split('-')
     if len(b) != 2 :
-      logger.warn("Malformed Content-Range %r", s)
+      logger.warning("Malformed Content-Range %r", s)
       return
     return int(b[0]),int(b[1]),int(a[1])
   ###################################### test_uri
@@ -4934,13 +4934,13 @@ def delta_upgrade_(args):
         return download_uri(responseheaders['location'], outname, conn_time, len_downloaded, statusdb)
       if not ( status == None or status == 200 or ( status == 206 and l != None ) ):
         if VERBOSE :
-          logger.warn('Connection problem, status:'+str(status)+' msg:'+str(message)+' uri:'+str(uri))
+          logger.warning('Connection problem, status:'+str(status)+' msg:'+str(message)+' uri:'+str(uri))
         r.read()
         r.close()
         return
       #print 'ooK Content-Range', r.getheader('Content-Range') #HACK
       if l and status == 200 :
-        logger.warn(' Hmmm... our HTTP range request failed, %r %r %r',re,status,message)
+        logger.warning(' Hmmm... our HTTP range request failed, %r %r %r',re,status,message)
       if status == 200 :
         out=open(outnametemp,'w')
         try:
@@ -4955,7 +4955,7 @@ def delta_upgrade_(args):
           a,b,total_len =_parse_ContentRange(responseheaders['Content-Range'])
         except (KeyError,ValueError):
           e=sys.exc_info()[1]
-          logger.warn('! problem, http response [206], Content Range %s , error %s , uri %s\n' %\
+          logger.warning('! problem, http response [206], Content Range %s , error %s , uri %s\n' %\
                            (responseheaders.get('Content-Range'),e,uri))
           return
         out.seek(a)
@@ -4969,7 +4969,7 @@ def delta_upgrade_(args):
       
       free=freespace(os.path.dirname(outname))
       if total_len != None and free and (free + 2**14 ) < total_len  :
-        logger.warn(_('Not enough disk space to download:')+' '+os.path.basename(uri))
+        logger.warning(_('Not enough disk space to download:')+' '+os.path.basename(uri))
         r.read()
         r.close()
         mainexitcodes.append(1)
@@ -5063,7 +5063,7 @@ def delta_upgrade_(args):
       try:
         thepoolindex=deb_path.index('pool')
       except ValueError:
-        logger.warn('! Package "%s" (version %s) does not have "pool" in the uri %s \n' % (p.name, candidate_version, deb_uri))
+        logger.warning('! Package "%s" (version %s) does not have "pool" in the uri %s \n' % (p.name, candidate_version, deb_uri))
         continue
       deb_path=str.join('/',deb_path[(thepoolindex):])
       
@@ -5137,7 +5137,7 @@ def delta_upgrade_(args):
       #some strange error in remote server?
       #FIXME this does not support ftp delta repositories
       if status != 200 and status != 206 and status != 404: 
-        logger.warn('Delta is not downloadable (%s %s):%s', status, httplib.responses.get(status), uri)
+        logger.warning('Delta is not downloadable (%s):%s', http_responses_get(status), uri)
         continue
 
       if status == 404: 
@@ -5210,7 +5210,7 @@ def delta_upgrade_(args):
         params_of_delta[p.name]=info_2_db(s)
         s=patch_check_tmp_space(params_of_delta[p.name],  '/')
         if s != True:
-          logger.warn('%r : sorry %r', p.name, s)
+          logger.warning('%r : sorry %r', p.name, s)
           #neither download deb nor delta..
           #the user may wish to free space and retry
           continue
@@ -5239,10 +5239,10 @@ def delta_upgrade_(args):
   b=sum([int(s.get('NEW/Installed-Size','0')) for s in params_of_delta.values()])
   c=sum([int(s.get('NEW/Size','0')) for s in params_of_delta.values()]) / 1024
   if DEB_FORMAT == 'deb' and a < c:
-    logger.warn('**'+_('Very low disk space, need %(need)d kB have %(have)d kB'),
+    logger.warning('**'+_('Very low disk space, need %(need)d kB have %(have)d kB'),
           {'need':c,'have':a})
   if DEB_FORMAT == 'unzipped' and a < b:
-    logger.warn('**'+_('Very low disk space, need %(need)d kB have %(have)d kB'),
+    logger.warning('**'+_('Very low disk space, need %(need)d kB have %(have)d kB'),
           {'need':b,'have':a})
 
   ###################### start  progress thread
@@ -5270,7 +5270,7 @@ def delta_upgrade_(args):
     if name in params_of_delta:
       s=patch_check_tmp_space(params_of_delta[name],  '/')
       if s != True:
-        logger.warn('%r : sorry, %r', name, s)
+        logger.warning('%r : sorry, %r', name, s)
         #argh, we ran out of space in meantime
         continue
     
@@ -5507,7 +5507,7 @@ elif action == 'patch-url':
     origin = p.candidate.origins[0]
     arch=candidate.architecture
     if not candidate.uris :
-      logger.warn(_("Sorry, cannot find an URI to download the debian package of `%s'.") % a)
+      logger.warning(_("Sorry, cannot find an URI to download the debian package of `%s'.") % a)
       continue
     deb_uri = candidate.uri
     installed_version=p.installed.version
@@ -5523,11 +5523,11 @@ elif action == 'patch-url':
                                            PackageName=p.name)
 
     if delta_uri_base == None:
-      logger.warn(_("Sorry, no source is available to upgrade `%s'.") % a)
+      logger.warning(_("Sorry, no source is available to upgrade `%s'.") % a)
       continue
 
     if installed_version == candidate_version:
-      logger.warn(_("Sorry, the package `%s' is already at its newest version.") % a)
+      logger.warning(_("Sorry, the package `%s' is already at its newest version.") % a)
       continue
 
     #delta name
