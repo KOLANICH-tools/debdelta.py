@@ -4476,16 +4476,35 @@ def delta_upgrade_(args):
   
   original_cwd = os.getcwd()
 
-  import threading,  fcntl, atexit, signal
+  import threading,  fcntl, atexit, signal, socket
   if sys.version_info.major == 2:
     import Queue, urllib2, thread
+    from httplib import HTTPConnection, HTTPException
+    def http_responses_get(j):
+      import httplib
+      return http_responses_get(j,str(j))
+    from urlparse import urlparse, urlunparse
+    from urllib2 import quote as urlquote
     proxies=urllib2.getproxies()
   else:
     import queue as Queue
     import _thread as thread
-    #import urllib as urllib2
+    from http.client  import HTTPConnection, HTTPException
+    #FIXME
+    http_responses_get = lambda j : str(j)
+    from urllib.parse import urlparse, urlunparse
+    from urllib.parse import quote as urlquote
     #FIXME
     proxies = []
+    
+  try:
+    import requests
+  except ImportError:
+    if (sys.version_info.major == 2):
+      logger.info('You may want to install `requests`\n# sudo apt install python-requests\n')
+    else:
+      logger.warning('You may want to install `requests`\n# sudo apt install python3-requests\n')
+    requests=None
 
   if VERBOSE and proxies:
     #note that this message is indented, I dont know what's best in translations
@@ -4700,10 +4719,6 @@ def delta_upgrade_(args):
     lp=int(lp*a)
     return download[:ld] + ' ; ' + patch[:lp] + '..'
   
-  #########################################
-
-  import socket, httplib
-  from urlparse import urlparse, urlunparse
 
   #################### manage connections
   #keeps a cache of all connections, by URL
@@ -4713,7 +4728,7 @@ def delta_upgrade_(args):
     url=urlparse(url)[1]
     if url not in http_conns:
       if VERBOSE > 1 : logger.debug('  Opening connection to: %r',url)
-      http_conns[url] = httplib.HTTPConnection(url, timeout=TIMEOUT)
+      http_conns[url] = HTTPConnection(url, timeout=TIMEOUT)
     return http_conns[url]
 
   def conn_close(url,fatal=False):
@@ -4730,27 +4745,59 @@ def delta_upgrade_(args):
   ####
 
   def _connect(uri, headers):
-    "connects for a GET ; returns (filetype, statuscode, servermessage, getheaders)"
+    """connects for a GET ; returns (filetype, statuscode, servermessage, getheaders)
+       in case of errors returns (exception, statuscode, None, None)
+    """
     uri_p=urlparse(uri)
+    ###### python3 code
+    if requests and uri_p.scheme in ('http','https') :
+        a=[copy(z) for z in uri_p]
+        a[2]=urlquote(uri_p[2])
+        uri=urlunparse(a)
+        try:
+          req = requests.get(uri, headers=headers, stream = True)
+          req.read = req.raw.read
+          return req, req.raw.status,req.raw.msg, req.raw.info()
+        except requests.exceptions.ConnectionError:
+          e=sys.exc_info()[1]
+          puke( 'Connection error (fatal)',uri)
+          return e, None, None, None
+        except requests.exceptions.RequestException:
+          e=sys.exc_info()[1]
+          puke( 'Error in http request (fatal)',uri)
+          return e, None, None, None
+    elif sys.version_info.major == 3:
+      import urllib.request
+      try:
+        req = urllib.request.urlopen(uri,)
+        return req, getattr(req,'code',None), getattr(req,'msg','(no message)'), req.info()
+      except urllib.request.HTTPError:
+        e=sys.exc_info()[1]
+        return e, e.code, None, None
+      except Exception:
+        e=sys.exc_info()[1]
+        #puke( 'Exception while accessing',uri)
+        return DebDeltaError('for %s : %s'%(uri,e)), None, None, None
+    ###### python2 code
     if uri_p.scheme == 'http' and not proxies:
       #use persistent http connections
       conn=conn_by_url(uri)
       if conn == None :
         return None, None, None, None
       try:
-        conn.request("GET", urllib2.quote(uri_p[2]),headers=headers)
+        conn.request("GET", urlquote(uri_p[2]),headers=headers)
         r = conn.getresponse()
         return r, r.status, r.reason, r.msg
-      except (httplib.HTTPException, socket.error):
+      except (HTTPException, socket.error):
         e=sys.exc_info()[1]
         if VERBOSE : puke( ' Connection error (retrying): ',uri_p[1])
         conn_close(uri)
         try:
           conn=conn_by_url(uri)
-          conn.request("GET", urllib2.quote(uri_p[2]),headers=headers)
+          conn.request("GET", urlquote(uri_p[2]),headers=headers)
           r = conn.getresponse()
           return r, r.status, r.reason, r.msg
-        except (httplib.HTTPException, socket.error):
+        except (HTTPException, socket.error):
           e=sys.exc_info()[1]
           puke( 'Connection error (fatal): ',uri_p[1])
           mainexitcodes.append(1)
@@ -4760,10 +4807,11 @@ def delta_upgrade_(args):
           mainexitcodes.append(1)
           return e, None, None, None
     else: #use urllib2
+      import urllib2
       try:
         if uri_p.scheme == 'http':
           a=[copy(z) for z in uri_p]
-          a[2]=urllib2.quote(uri_p[2])
+          a[2]=urlquote(uri_p[2])
           uri=urlunparse(a)
         req = urllib2.Request(uri, headers=headers)
         r = urllib2.urlopen(req)
@@ -4772,7 +4820,7 @@ def delta_upgrade_(args):
       except urllib2.HTTPError:
         e=sys.exc_info()[1]
         return e.code, None, None, None
-      except (httplib.HTTPException,socket.error,urllib2.URLError):
+      except (HTTPException,socket.error,urllib2.URLError):
         e=sys.exc_info()[1]
         puke( 'Connection error (fatal)',uri)
         mainexitcodes.append(1)
@@ -4800,7 +4848,7 @@ def delta_upgrade_(args):
       if conn == None: return None
       uri_p=urlparse(uri)
       assert(uri_p[0] == 'http')
-      conn.request("HEAD", urllib2.quote(uri_p[2]),headers=HTTP_USER_AGENT)
+      conn.request("HEAD", urlquote(uri_p[2]),headers=HTTP_USER_AGENT)
       r = conn.getresponse()
       r.read()
       r.close()
@@ -5228,7 +5276,7 @@ def delta_upgrade_(args):
       thread_returns['downloaduri']=os.path.basename(uri)
       r=download_uri(uri, abs_delta_name, deltas_down_time, deltas_down_size, thread_returns)
       del thread_returns['downloaduri']
-      if r == None or isinstance(r, httplib.HTTPException) :
+      if r == None or isinstance(r, HTTPException) :
         if VERBOSE : logger.info(' '+_('You may wish to rerun, to get also:')+' '+uri)
         continue
       else:
@@ -5259,7 +5307,7 @@ def delta_upgrade_(args):
       thread_returns['downloaduri']=os.path.basename(uri)
       r=download_uri(uri, newdeb, debs_down_time, debs_down_size, thread_returns)
       del thread_returns['downloaduri']
-      if r == None or isinstance(r, httplib.HTTPException) :
+      if r == None or isinstance(r, HTTPException) :
         if VERBOSE : logger.debug(' You may wish to rerun, to get also: %r',uri)
         continue
       if r:
