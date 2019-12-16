@@ -409,7 +409,7 @@ try:
   BOGOMIPS=float(a.split(':')[-1])
 except:
   if VERBOSE:
-    sys.stderr.write(' Warning, /proc not mounted, using bogus BOGOMIPS\n')
+    logger.exception(' Warning, /proc not mounted, using bogus BOGOMIPS\n')
   BOGOMIPS=3000.0
 
 SP=subprocess.Popen(['hostname','-f'], shell=False, stdout=subprocess.PIPE)
@@ -4512,7 +4512,7 @@ def delta_upgrade_(args):
     if (sys.version_info.major == 2):
       logger.info('You may want to install `requests`\n# sudo apt install python-requests\n')
     else:
-      logger.warning('You may want to install `requests`\n# sudo apt install python3-requests\n')
+      logger.warning('You should install `requests`\n# sudo apt install python3-requests\n')
     requests=None
 
   if VERBOSE and proxies:
@@ -4766,7 +4766,7 @@ def delta_upgrade_(args):
         try:
           req = requests.get(uri, headers=headers, stream = True)
           req.read = req.raw.read
-          return req, req.raw.status,req.raw.msg, req.raw.info()
+          return req, req.raw.status, req.raw.msg, req.raw.info()
         except requests.exceptions.ConnectionError:
           e=sys.exc_info()[1]
           puke( 'Connection error (fatal)',uri)
@@ -4816,12 +4816,12 @@ def delta_upgrade_(args):
           mainexitcodes.append(1)
           return e, None, None, None
     else: #use urllib2
+      if uri_p.scheme == 'http':
+        a=[copy(z) for z in uri_p]
+        a[2]=urlquote(uri_p[2])
+        uri=urlunparse(a)
       import urllib2
       try:
-        if uri_p.scheme == 'http':
-          a=[copy(z) for z in uri_p]
-          a[2]=urlquote(uri_p[2])
-          uri=urlunparse(a)
         req = urllib2.Request(uri, headers=headers)
         r = urllib2.urlopen(req)
         #print r.info(),dir(r),r.code
@@ -4913,6 +4913,7 @@ def delta_upgrade_(args):
 
   ###################################### download_uri
   def download_uri(uri, outname, conn_time, len_downloaded, statusdb):
+      "returns `(time_elapsed, bytes_downloaded)`; or `None` in case of error,  "
       outnametemp=os.path.join(os.path.dirname(outname),'partial',os.path.basename(outname))
       re=copy(HTTP_USER_AGENT)
       #content range
