@@ -2543,7 +2543,7 @@ def do_delta_(olddeb, newdeb, delta, TD, forensic_file=None, info=[]):
       s=[]
       scan_control(p,params=None,prefix=o,info=s)
       p.close()
-      if  VERBOSE  : logger.debug(' '+o+': '+join([o[4:] for o in  s],' '))
+      if  VERBOSE  : logger.debug(' '+o+': '+str.join(' ',[o[4:] for o in  s]))
       info = info + s
   info.append('OLD/Size: '+str(olddebsize))
   info.append('NEW/Size: '+str(newdebsize))
