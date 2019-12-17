@@ -163,6 +163,10 @@ if sys.version_info.major == 2:
     return a
   def bytes2str(b):
     return b
+  # see https://docs.python.org/2/library/tarfile.html#unicode-issues
+  if sys.getfilesystemencoding() != 'UTF-8':
+    logger.warning('The filesystem encoding is %r, but this program assumes `UTF-8`.'%\
+                   (sys.getfilesystemencoding(),))  
 else:
   string_types = (str, bytes)  # python3
   # flags for subprocess.Popen to open stdin,stdout as text streams
@@ -172,9 +176,16 @@ else:
   #
   long = int
   def str2bytes(a):
-    return a.encode('UTF-8')
+    return a.encode('UTF-8',errors='surrogateescape')
   def bytes2str(b):
-    return b.decode('UTF-8')
+    return b.decode('UTF-8',errors='surrogateescape')
+  # see https://docs.python.org/3/library/tarfile.html#unicode-issues
+  if sys.getfilesystemencoding() != 'utf-8':
+    logger.warning('The filesystem encoding is %r, but this program assumes `utf-8`.'%\
+                   (sys.getfilesystemencoding(),))
+  elif sys.getfilesystemencodeerrors() != 'surrogateescape':
+    logger.warning('The filesystem encoding is `utf-8` with %r, but this program uses `surrogateescape`.'%\
+                   (sys.getfilesystemencodeerrors(),))
 
 def get_termsize():
   import termios, fcntl, struct
