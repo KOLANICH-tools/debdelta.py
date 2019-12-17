@@ -525,11 +525,19 @@ def append_info(delta,info):
   return r
   
 def de_n(a):
-  if a and a[-1] ==  '\n' :
+  assert isinstance(a, str)
+  if a and a[-1:] ==  '\n' :
+    a = a[:-1]
+  return a
+
+def de_n_b(a):
+  assert sys.version_info.major == 2 or isinstance(a, bytes)
+  if a and a[-1:] ==  b'\n' :
     a = a[:-1]
   return a
 
 def de_bar(a):
+  assert isinstance(a, str)
   if a and a[:2] == './' :
     a=a[2:]
   elif a == '/.' :
@@ -538,6 +546,17 @@ def de_bar(a):
     a=a[1:]
   return a
 
+def de_bar_b(a):
+  assert sys.version_info.major == 2 or isinstance(a, bytes)
+  if a and a[:2] == b'./' :
+    a=a[2:]
+  elif a == b'/.' :
+      a=''
+  elif a and a[0] == b'/' :
+    a=a[1:]
+  return a
+
+
 def list_ar(f):
   assert(os.path.exists(f))
   ar_list = []
@@ -545,20 +564,21 @@ def list_ar(f):
   while 1:
     a=p.readline()
     if not a : break
-    a=de_n(a)
-    ar_list.append(a)    
+    a=de_n_b(a)
+    ar_list.append(a)
   p.close()
   return ar_list
 
 def list_tar(f):
+  " returns content of the tar file `f`, as a list of `bytes`"
   assert(os.path.exists(f))
   ar_list = []
   p=my_popen_read(['tar','t',f])
   while 1:
     a=p.readline()
     if not a : break
-    a=de_n(a)
-    ar_list.append(a)    
+    a=de_n_b(a)
+    ar_list.append(a)
   p.close()
   return ar_list
 
