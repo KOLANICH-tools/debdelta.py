@@ -3285,7 +3285,7 @@ def do_delta_(olddeb, newdeb, delta, TD, forensic_file=None, info=[]):
           if s < basescore:
               oldname=o
               basescore=s
-        if oldname and VERBOSE > 2 : logger.debug('   best similar  ','%.3f %r %r',basescore,newname,oldname)
+        if oldname and VERBOSE > 2 : logger.debug('   best similar %.3f %r %r',basescore,newname,oldname)
       if not oldname:
         if VERBOSE > 2 : logger.debug('   no correspondence for: %r',newname)
         continue
