@@ -951,15 +951,19 @@ def system(a,TD,saveargs=None,ignore_output=False,return_output=False):
       s=s+'\n    (there was an additional OSError "'+str(o)+'" when trying to save arguments)'
     die(s)
 
-def check_deb(f):
+def check_deb(f, die_ = True):
   if not  os.path.exists(f) :
     die(_("Error: the file `%s' does not exist.") % f)
   if not  os.path.isfile(f) :
     die(_("Error: `%s' is not a regular file.") % f)
   p=open(f,'rb')
   if p.read(21) != b"!<arch>\ndebian-binary" :
-    die(_("Error: `%s' does not seem to be a Debian package.") % f)
+    if die_:
+      die(_("Error: `%s' does not seem to be a Debian package.") % f)
+    else:
+      return False
   p.close()
+  return True
 
 def check_is_delta(f):
   if not  os.path.exists(f) :
@@ -3868,6 +3872,9 @@ def scan_deb_dir(d, debname, label, lazy, info_by_pack_arch, info_by_file):
       if n[-4:] != '.deb':
         continue
       if debname != None and debname != n.split('_')[0]:
+        continue
+      if not check_deb(os.path.join(d,n), die_ = False):
+        logger.warning('Is not a deb file: %r',n)
         continue
       a=scan(os.path.join(d,n),  info_by_file)
       a['Label'] = label
