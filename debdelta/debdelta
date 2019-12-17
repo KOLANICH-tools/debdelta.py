@@ -3198,26 +3198,26 @@ def do_delta_(olddeb, newdeb, delta, TD, forensic_file=None, info=[]):
     " returns the second part of a tar header , for regular files and dirs"
     # The following code was contributed by Detlef Lannert.
     # into /usr/lib/python2.3/tarfile.py
-    MAGIC      = "ustar"            # magic tar string
-    VERSION    = "00"               # version number
-    NUL        = "\0"               # the null character
+    MAGIC      = b"ustar"            # magic tar string
+    VERSION    = b"00"               # version number
+    NUL        = b"\0"               # the null character
     parts = []
     for value, fieldsize in (
-      ("", 100),
+      (b"", 100),
       # unfortunately this is not what DPKG does
       #(MAGIC, 6),
       #(VERSION, 2),
       #  this is  what DPKG does
-      ('ustar  \x00',8),
-      ("root", 32),
-      ("root", 32),
-      ("%07o" % 0, 8),
-      ("%07o" % 0, 8),
-      ("", 155)
+      (b'ustar  \x00',8),
+      (b"root", 32),
+      (b"root", 32),
+      (b"%07o" % 0, 8),
+      (b"%07o" % 0, 8),
+      (b"", 155)
       ):
       l = len(value)
       parts.append(value + (fieldsize - l) * NUL)      
-    buf = "".join(parts)
+    buf = b"".join(parts)
     return buf
   
   fake_tar_2nd=fake_tar_header_2nd()
