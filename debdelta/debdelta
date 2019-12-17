@@ -2589,6 +2589,7 @@ def do_delta_(olddeb, newdeb, delta, TD, forensic_file=None, info=[]):
         if a[:12] == b'control.tar.':
           f=a
       b={b'.gz':'-z',  b'.xz':'-J',  b'.bz2':'-j'}.get(f[11:])
+      assert b != None
       system(('ar','p',TD+o+'.file',f,'|','tar',b,'-xf','-','-C',TD+o+'/CONTROL'),TD)
       ## scan control
       p=open(TD+'/'+o+'/CONTROL/control')
