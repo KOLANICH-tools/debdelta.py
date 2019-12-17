@@ -1461,6 +1461,7 @@ def tarinfo_to_ls(tartype,tarmode):
 
 
 def sha1_hash_file(f):
+    "returns hex digest of file"
     s=hashlib.sha1()
     if type(f) in string_types:
       f=open(f,'rb')
@@ -1469,13 +1470,7 @@ def sha1_hash_file(f):
       s.update(a)
       a=f.read(1024)
     f.close()
-    return s.digest()
-
-def hash_to_hex(s):
-    a=''
-    for i in s:
-        a=a+ ( '%02x' % ord(i)  )
-    return a
+    return s.hexdigest()
 
 def forensics_rfc(o,db,bytar,controlfiles,files,conffiles,diverted=[],diversions={},localepurged=[],prelink_u_failed=[]):
   " this is invoked by do_patch_() as well as do_delta_() ; in the former case, by_tar=False"
@@ -1514,9 +1509,9 @@ def forensics_rfc(o,db,bytar,controlfiles,files,conffiles,diverted=[],diversions
           fullname,mode,tartype,uid,gid,uname,gname,data='',0,'?',0,0,'?','?','?'
         if tartype == tarfile.REGTYPE:
           if tmpcopy and os.path.exists(tmpcopy):
-            data=hash_to_hex(sha1_hash_file(tmpcopy))
+            data=sha1_hash_file(tmpcopy)
           elif os.path.exists(divert):
-            data=hash_to_hex(sha1_hash_file(divert))
+            data=sha1_hash_file(divert)
       if name in ('.', '/', './', '/.') and tartype == tarfile.DIRTYPE: #skip root
         continue
       if uname == None: uname=str(uid)
@@ -2245,7 +2240,7 @@ def do_patch_(delta, olddeb, newdeb, TD, runtime,
         (temp_fd,temp_fore_name) = tempfile.mkstemp(prefix="debforensic_"+params['NEW/Package']+"_")
         temp_file=os.fdopen(temp_fd,'w')
         temp_file.write('Delta: '+delta+'\n')
-        temp_file.write('DeltaSHA1: '+hash_to_hex(sha1_hash_file(delta))+'\n')
+        temp_file.write('DeltaSHA1: ' + sha1_hash_file(delta) + '\n')
         temp_file.write('LocalePurgedFilesN: '+str(len(localepurged))+'\n')
         temp_file.write('PrelinkUFailedN: '+str(len(prelink_u_failed))+'\n')
         if ret:
@@ -3288,7 +3283,7 @@ def do_delta_(olddeb, newdeb, delta, TD, forensic_file=None, info=[]):
         if old_forensic != None:
           oldtar.extract(oldtarinfo,TD+"OLD/"+CWD )
           old_forensic.append(old_forensic.pop()[:-1] + \
-                              [hash_to_hex(sha1_hash_file(os.path.join(TD,"OLD",CWD,oldname)))])
+                              [sha1_hash_file(os.path.join(TD,"OLD",CWD,oldname))])
         continue
 
       oldnames.append(oldname)
@@ -3296,7 +3291,7 @@ def do_delta_(olddeb, newdeb, delta, TD, forensic_file=None, info=[]):
       oldtar.extract(oldtarinfo,TD+"OLD/"+CWD )
       if old_forensic != None:
         old_forensic.append(old_forensic.pop()[:-1] + \
-                            [hash_to_hex(sha1_hash_file(os.path.join(TD,"OLD",CWD,oldname)))])
+                            [sha1_hash_file(os.path.join(TD,"OLD",CWD,oldname))])
       
     oldtar.close()
     if type(old_filename) in string_types :
