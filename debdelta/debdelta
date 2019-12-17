@@ -3312,6 +3312,8 @@ def do_delta_(olddeb, newdeb, delta, TD, forensic_file=None, info=[]):
     ####  scan the new tarfile, compare to the old tar contents
     assert(0 == (new_file_size % 512))
     newtar = tarfile.open(TD+new_filename, "r")
+    logger.log(logging.DEBUG if newtar.format == tarfile.GNU_FORMAT else logging.WARNING,
+               '  tar file format %r for %r'%(newtar.format,new_filename))
     newnames = []
     newtarinfos = {}
     for newtarinfo in newtar:
