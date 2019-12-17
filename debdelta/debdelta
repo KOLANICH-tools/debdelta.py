@@ -3623,7 +3623,7 @@ def do_delta_(olddeb, newdeb, delta, TD, forensic_file=None, info=[]):
     return x
   
   for name in ar_list_new :
-    newname = 'NEW/'+name
+    newname = 'NEW/'+bytes2str(name)
     system(('ar','x',TD+'NEW.file',name), TD+'/NEW/')
     script.xz_parameters=None
     newsize = os.stat(TD+newname)[ST_SIZE]
