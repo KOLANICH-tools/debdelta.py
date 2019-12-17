@@ -1453,11 +1453,11 @@ def tarinfo_to_ls(tartype,tarmode):
     if ord(tartype) == 0 :
         a='_'
     else:
-        if tartype >= '0' and tartype <= '6' :
+        if tartype >= b'0' and tartype <= b'6' :
             a="-hlcbdp"[ord(tartype) - ord('0')] 
         else:
             a='?'
-    return a+tarfile.filemode(tarmode)[1:]
+    return a+stat.filemode(tarmode)[1:]
 
 
 def sha1_hash_file(f):
