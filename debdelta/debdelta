@@ -972,14 +972,18 @@ def check_is_delta(f):
   p.close()
 
 def puke(s,e=None):
-  " write informations on stderr, if DEBUG also traceback"
+  """ write informations on stderr; if DEBUG also prints traceback;
+  if DEBUG>1 and `e` is given, rereaise the exception"""
   (typ, value, trace)=sys.exc_info()
   if e == None or len(str(e)) < 2:
     logger.error(str(s)+' : '+str(e)+' '+str(typ)+' '+str(value))
   else:
     logger.error(str(s)+' : '+str(e))
-  if DEBUG and trace and traceback.print_tb(trace):
+  if DEBUG > 1 and e is not None and trace:
+      raise
+  elif DEBUG and trace and traceback.print_tb(trace):
     logger.error( traceback.print_tb(trace))
+  
 
 ################################################################### GPG
 
