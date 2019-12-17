@@ -313,7 +313,10 @@ else:
       raise SystemExit(3)
 
   for  o , v  in  opts :
-    if o == '-v' : VERBOSE += 1
+    if o == '-v' :
+      VERBOSE += 1
+      if VERBOSE > 1 : 
+        logger.setLevel(logging.DEBUG)
     elif o == '-d' or o == '--debug' :
       DEBUG += 1
       logger.setLevel(logging.DEBUG)
