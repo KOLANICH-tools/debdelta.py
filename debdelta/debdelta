@@ -3419,7 +3419,7 @@ def do_delta_(olddeb, newdeb, delta, TD, forensic_file=None, info=[]):
     
     #helper function
     def _append_(p, w, rm):
-      mega_cat.write(w+fake_tar_2nd)
+      mega_cat.write(str2bytes(w)+fake_tar_2nd)
       f=open(TD+p+'/'+w,'rb')
       a=f.read(1024)
       while a:
@@ -3519,28 +3519,28 @@ def do_delta_(olddeb, newdeb, delta, TD, forensic_file=None, info=[]):
 
       if newtarinfo.isdir():
         #recreate also parts of the tar headers
-        mega_cat.write(newtarinfo.name+fake_tar_2nd)
-        script.write("$E '"+prepare_for_echo(newtarinfo.name)+"'\"${FTH}\"\n")
+        mega_cat.write(str2bytes(newtarinfo.name)+fake_tar_2nd)
+        script.write("$E '"+prepare_for_echo(str2bytes(newtarinfo.name))+"'\"${FTH}\"\n")
         if VERBOSE > 2 : logger.debug('   directory   in new : %r', name)
         continue
 
       if not newtarinfo.isreg():
         #recreate also parts of the tar headers
-        mega_cat.write(newtarinfo.name+fake_tar_2nd)
+        mega_cat.write(str2bytes(newtarinfo.name)+fake_tar_2nd)
         script.write("$E '"+prepare_for_echo(newtarinfo.name)+"'\"${FTH}\"\n")
         if VERBOSE > 2 : logger.debug('   not regular in new : %r', name)
         continue
 
       if newtarinfo.size == 0:
         #recreate also parts of the tar headers
-        mega_cat.write(newtarinfo.name+fake_tar_2nd)
+        mega_cat.write(str2bytes(newtarinfo.name)+fake_tar_2nd)
         script.write("$E '"+prepare_for_echo(newtarinfo.name)+"'\"${FTH}\"\n")
         if VERBOSE > 2 : logger.debug('   empty  new file    : %r', name)
         continue
 
       if name not in correspondence:
         #recreate also parts of the tar headers
-        mega_cat.write(newtarinfo.name+fake_tar_2nd)
+        mega_cat.write(str2bytes(newtarinfo.name)+fake_tar_2nd)
         script.write("$E '"+prepare_for_echo(newtarinfo.name)+"'\"${FTH}\"\n")
         if VERBOSE > 2: logger.debug('   no corresponding fil: %r', name)
         continue 
