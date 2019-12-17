@@ -457,8 +457,10 @@ else:
 
 #################################################### various routines
 
-def my_popen_read(cmd):
-  return subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stdin=open(os.devnull), close_fds=True).stdout
+def my_popen_read(cmd, ** args):
+  " opens a pipe (for text mode, pass `**Popen_args` )"
+  return subprocess.Popen(cmd, stdout=subprocess.PIPE, stdin=open(os.devnull),
+                          close_fds=True, **args).stdout
 
 def freespace(w):
   assert(os.path.exists(w))
@@ -539,7 +541,7 @@ def de_bar(a):
 def list_ar(f):
   assert(os.path.exists(f))
   ar_list = []
-  p=my_popen_read('ar t '+f)
+  p=my_popen_read(['ar','t', f])
   while 1:
     a=p.readline()
     if not a : break
@@ -551,7 +553,7 @@ def list_ar(f):
 def list_tar(f):
   assert(os.path.exists(f))
   ar_list = []
-  p=my_popen_read('tar t '+f)
+  p=my_popen_read(['tar','t',f])
   while 1:
     a=p.readline()
     if not a : break
@@ -1758,7 +1760,7 @@ def do_patch_(delta, olddeb, newdeb, TD, runtime,
       dpkg_params={}
       b=params['OLD/Package']
       if os.path.isdir(olddeb):
-        p=my_popen_read('env -i dpkg -s '+b)
+        p=my_popen_read(['env', '-i', 'dpkg', '-s',b])
       else:        
         p=open(TD+'OLD/CONTROL/control')
       scan_control(p,params=dpkg_params,prefix='OLD')
@@ -1811,9 +1813,9 @@ def do_patch_(delta, olddeb, newdeb, TD, runtime,
     s=[]
     diverted=[]
     if DPKG_MULTIARCH:
-      p=my_popen_read('env -i dpkg-query -L '+pa+':'+ar)
+      p=my_popen_read(['env', '-i', 'dpkg-query', '-L', pa+':'+ar])
     else:
-      p=my_popen_read('env -i dpkg-query -L '+pa)
+      p=my_popen_read(['env', '-i', 'dpkg-query', '-L', pa])
     a=p.readline()
     while a:
       a=de_n(a)
@@ -3855,7 +3857,7 @@ def scan_deb_byfile(f, info_by_file):
     a['File']=f
     c,b,z = untar_control_in_deb( list_ar(f) )
     p=PopenPipe(['ar','p',f,c,'|','tar',b,'-xp','-f','-','-O','./control'],
-                stdout = subprocess.PIPE)
+                stdout = subprocess.PIPE, ** Popen_args)
     scan_control(p.stdout, params=a)
     p.close()
     return a
