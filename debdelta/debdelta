@@ -683,7 +683,7 @@ class cache_same_dict(cache_sequence):
     super(cache_same_dict, self).write(n)
   
   def next(self):
-    n=super(cache_same_dict, self).next()
+    n=next(super(cache_same_dict, self))
     return dict(map(lambda x,y: (x,y) , self.keys, n)) # dict comprehension may be used instead
 
 #####################################################################
@@ -2443,7 +2443,7 @@ def do_delta_(olddeb, newdeb, delta, TD, forensic_file=None, info=[]):
       self.current_chunk_name=None
       self.delta_uses_infifo=delta_uses_infifo
       if delta_uses_infifo : #create the fifo as input for xdelta3
-        self.the_fifo=a_numb_file.next()
+        self.the_fifo=next(a_numb_file)
         self.fd.write("mkfifo %s\n" % self.the_fifo)
       else:
         self.the_fifo=None
@@ -2699,7 +2699,7 @@ def do_delta_(olddeb, newdeb, delta, TD, forensic_file=None, info=[]):
     unlink(TD+'PATCH/'+f)
 
   def verbatim(f):
-    pp=a_numb_patch.next()
+    pp=next(a_numb_patch)
     p = 'PATCH/'+pp
     if VERBOSE > 1 : logger.debug('  including %r verbatim in patch', name)
     os.rename(TD+f,TD+p)
@@ -2798,7 +2798,7 @@ def do_delta_(olddeb, newdeb, delta, TD, forensic_file=None, info=[]):
     if VERBOSE > 1 :  logger.debug('  compute delta for %s (%dkB) and %s (%dkB)',
        o,osize/1024,n,nsize/1024)
     #
-    p = 'PATCH/'+a_numb_patch.next()
+    p = 'PATCH/'+next(a_numb_patch)
     tim = -time.time()
     #
     if DEBUG > 3 :  script.md5_check_file(o)
@@ -3394,7 +3394,7 @@ def do_delta_(olddeb, newdeb, delta, TD, forensic_file=None, info=[]):
     
     script.start_rebuilding()
     
-    current_chunk_name=a_numb_file.next()
+    current_chunk_name=next(a_numb_file)
     script.start_chunk(current_chunk_name)
     mega_cat=open(TD+'/'+current_chunk_name,'wb')
     
@@ -3422,7 +3422,7 @@ def do_delta_(olddeb, newdeb, delta, TD, forensic_file=None, info=[]):
     #helper function
     def mega_cat_chunk(oldoffset,newoffset, background=True):
       global something_backgrounded
-      p = a_numb_file.next()
+      p = next(a_numb_file)
       f=open(TD+new_filename,'rb')
       f.seek(oldoffset)
       of=open(TD+p,'wb')
@@ -3464,7 +3464,7 @@ def do_delta_(olddeb, newdeb, delta, TD, forensic_file=None, info=[]):
         yield None
 
     some_old_file=some_old_file_gen()
-    one_old_file=some_old_file.next()
+    one_old_file=next(some_old_file)
 
     max_chunk_size = MAXMEMORY / 12
     chunk_discount = 0.3
@@ -3482,14 +3482,14 @@ def do_delta_(olddeb, newdeb, delta, TD, forensic_file=None, info=[]):
           _append_("OLD/"+CWD, one_old_file, False)
           if mega_cat.tell() >=  max_chunk_size * chunk_discount :
             break
-          one_old_file=some_old_file.next()
+          one_old_file=next(some_old_file)
         #write the chunk into a temporary
         mega_cat.close()
         script.end_chunk(current_chunk_name)
         #delta the chunk
         mega_cat_chunk(progressive_new_offset, newtarinfo.offset )
         #start a new chunk
-        current_chunk_name=a_numb_file.next()
+        current_chunk_name=next(a_numb_file)
         script.start_chunk(current_chunk_name)
         mega_cat=open(TD+'/'+current_chunk_name,'wb')
         #
