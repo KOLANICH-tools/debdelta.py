@@ -3097,7 +3097,7 @@ def do_delta_(olddeb, newdeb, delta, TD, forensic_file=None, info=[]):
         if VERBOSE > 2 : logger.debug('   Testing XZ options %r',w)
         redo=False
         c=PopenPipe(['unxz','-c',z.name,'|']+w+['|','cmp','-',z.name],\
-                    stdout=open(os.devnull,'wr'),stderr=open(os.devnull,'wr'),close_fds=True)
+                    stdout=open(os.devnull,'wb'),stderr=open(os.devnull,'wb'),close_fds=True)
         c.wait()
         if c.returncode :
           redo=True
