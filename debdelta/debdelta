@@ -688,9 +688,11 @@ class cache_same_dict(cache_sequence):
 
 #####################################################################
 
-ALLOWED = b'<>()[]{}.,;:!_-+/ abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
+ALLOWED = '<>()[]{}.,;:!_-+/ abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
+ALLOWED_SET = set(ord(j) for j in ALLOWED)
+NUMBERS_SET = set(ord(j) for j in '0123456789')
 
-ECHO_TEST = br"""c='\0151\0141'
+ECHO_TEST = r"""c='\0151\0141'
 E='echo -ne'
 if test c`$E 'i'"$c" `o = ciiao  ; then
  :
@@ -719,6 +721,9 @@ def prepare_for_echo_py2_(s):
         a = "\\" + ('000' +oct(ord(a)))[-4:]
       shortquoted = False
       r += a
+    elif a == 0:
+      r += '\\0'
+      shortquoted = True
     else:
       a = "\\" + oct(ord(a))
       r += a
@@ -726,25 +731,30 @@ def prepare_for_echo_py2_(s):
   return r
 
 def prepare_for_echo_py3_(s):
-  assert ( type (s) in string_types )
+  " `s` may be a `str` or `bytes` ; returns `str`"
+  #assert isinstance(s,bytes)
   if isinstance(s,str):
     s = str2bytes(s)
-  r=b''
-  O = lambda x : str2bytes(oct(x)[2:])
+  r=''
+  O = lambda x : oct(x)[2:]
   shortquoted=False
   for a in s:
-    if a in ALLOWED :
-      r += bytes([a])
+    #j = ord(a)
+    if a in ALLOWED_SET :
+      r += chr(a)
       shortquoted = False
-    elif a in b'0123456789' :
+    elif a in NUMBERS_SET :
       if shortquoted :
-        a = b"\\" + (b'000' +  O(a) )[-4:]
+        a = "\\" + ('000' +  O(a) )[-4:]
         r += a
         shortquoted = False
       else:
-        r += bytes([a])
+        r += chr(a)
+    elif a == 0:
+      r += '\\0'
+      shortquoted = True
     else:
-      a = b"\\0" + O(a)
+      a = "\\0" + O(a)
       r += a
       shortquoted = len(a) < 5
   return r
@@ -756,17 +766,18 @@ else:
 
 
 def apply_prepare_for_echo(shell,repres):
-    a=ECHO_TEST  + b" $E '" + repres +  b"' \n exit "
-    p = subprocess.Popen([shell], stdin=subprocess.PIPE, stdout=subprocess.PIPE, close_fds=True)
+    a=ECHO_TEST  + " $E '" + repres +  "' \n exit "
+    p = subprocess.Popen([shell], stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+                         close_fds=True) #, ** Popen_args)
     (i, o) = (p.stdout, p.stdin)
-    o.write(a)
+    o.write(str2bytes(a))
     o.close()
     a=i.read()
     i.close()
     return a
 
 #ack! I wanted to use 'dash' as preferred shell, but bug 379227 stopped me
-SHELL = b'/bin/bash'
+SHELL = '/bin/bash'
 #check my code
 s=b'\x00'+b'1ciao88\n77\r566'+b'\x00'+b'99\n'
 r=prepare_for_echo__(s)
