@@ -4824,11 +4824,11 @@ def delta_upgrade_(args):
           return req, req.raw.status, req.raw.msg, req.raw.info()
         except requests.exceptions.ConnectionError:
           e=sys.exc_info()[1]
-          puke( 'Connection error (fatal)',uri)
+          puke( 'Connection error (fatal): %r'%(uri,),e)
           return e, None, None, None
         except requests.exceptions.RequestException:
           e=sys.exc_info()[1]
-          puke( 'Error in http request (fatal)',uri)
+          puke( 'Error in http request (fatal): %r'%(uri,),e)
           return e, None, None, None
     elif sys.version_info.major == 3:
       import urllib.request
@@ -4854,7 +4854,7 @@ def delta_upgrade_(args):
         return r, r.status, r.reason, r.msg
       except (HTTPException, socket.error):
         e=sys.exc_info()[1]
-        if VERBOSE : puke( ' Connection error (retrying): ',uri_p[1])
+        if VERBOSE : puke( ' Connection error (retrying): %r'%(uri_p[1],),e)
         conn_close(uri)
         try:
           conn=conn_by_url(uri)
@@ -4886,7 +4886,7 @@ def delta_upgrade_(args):
         return e.code, None, None, None
       except (HTTPException,socket.error,urllib2.URLError):
         e=sys.exc_info()[1]
-        puke( 'Connection error (fatal)',uri)
+        puke( 'Connection error (fatal): %r'%(uri,), e)
         mainexitcodes.append(1)
         return e, None, None, None
 
