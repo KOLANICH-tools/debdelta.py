@@ -205,14 +205,16 @@ DO_PROGRESS = terminalcolumns != None and  __name__ == '__main__'
 #where/how debpatch/debdelta-upgrade will send forensic data, when patching fails
 #possible values:
 #  False                 : do not send them
-#  True                  : compute forensic but not send them, just list them
-#  mail                  : automatically send by email to default address
-#  user@domain           : automatically send by email to address
-#  mailto:user@domain    : as above
-#  mutt:user@domain      : as above, but use 'mutt', so the user can customize it
+#  do                    : compute forensic but not send them, just list them
+#  mail                  : automatically send by email to default address (uses `mutt`)
+#  mail:user@domain      : automatically send by email to address  (uses `mutt`)
+#  mutt                  : as above
+#  mutt:user@domain      : as above
 #  http://domain/cgi     : send them automatically thru a CGI script
 #Warning: the above is mostly TODO
-FORENSIC='http'
+FORENSIC='do'
+
+FORENSIC_EMAIL='debdelta_fail@debdelta.debian.net'
 
 #directory tree where forensic info are stored by 'debdeltas'
 FORENSICDIR=None
@@ -1450,9 +1452,9 @@ def tar_those(f):
 def forensic_send(f,forensic=FORENSIC):
   " note that f must be a list of lists (or None)"
   assert type(f) == list
-  if not forensic :
+  if forensic is False or forensic == 'False' or forensic == '':
     if f:
-      logger.error(_('(Faulty delta. Please consider retrying with the option "--forensic=http" ).')+'\n')
+      logger.error(_('(Faulty delta. Please consider retrying with the option "--forensic=do" ).')+'\n')
     return
   if not f:
     return
@@ -1460,14 +1462,17 @@ def forensic_send(f,forensic=FORENSIC):
     logger.warning('Sorry, no forensic logs were generated')
     return
   if forensic[:4] in ('mutt','mail') or forensic[:7] == 'icedove' or forensic[:10]=='thunderbird':
-    email=EMAIL
+    email=FORENSIC_EMAIL
     if ':' in forensic:
       a=forensic.find(':')
       email == forensic[a:]
       forensic=forensic[:a]
     logger.warning(_("There were faulty deltas.")+' '+_("Now invoking the mail sender to send the logs."))
     if forensic in ('mutt','mail'):
-      raw_input( _('(hit any key)') )
+      if sys.version_info.major == 2:
+        raw_input( _('(hit any key)') )
+      else:
+        input( _('(hit any key)') )
       args=[]
       for z in f:
         if z:
@@ -1495,6 +1500,7 @@ def forensic_send(f,forensic=FORENSIC):
           tar.add(j,arcname=os.path.basename(j))
     tar.close()
     #http://atlee.ca/software/poster
+    ## FIXME this will not work with python3
     import urllib, urllib2, httplib, poster
     poster.streaminghttp.register_openers()
     datagen, headers = poster.encode.multipart_encode({'auth_userid':'debdelta','auth_password':'slartibartfast',"thefile": open(temptar, "rb")})
@@ -1509,7 +1515,7 @@ def forensic_send(f,forensic=FORENSIC):
       if z:
         logger.warning(' '+string.join(z,' ')+'\n')
     return
-  logger.warning(_('(Faulty delta. Please consider retrying with the option "--forensic=http" ).')+'\n')
+  logger.warning(_('(Faulty delta. Please consider retrying with the option "--forensic=do" ).')+'\n')
 
 def elf_info(f):
   "returns (is_elf, ei_class, ei_data, ei_osabi, e_type)"
