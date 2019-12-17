@@ -4022,7 +4022,9 @@ def iter_deltas_one_pack_arch(pa,ar,info_pack,thedir,theforensicdir,VersionCompa
     #      assert a['Label'] == 'ALT'
     #      scan_deb_bydict(a)
     
-    info_pack.sort(cmp = lambda x,y : order_by_version(x, y, VersionCompare))
+    import functools
+    mykey = functools.cmp_to_key(lambda x,y : order_by_version(x, y, VersionCompare))
+    info_pack.sort(key = mykey)
     
     how_many= len(info_pack)
     
