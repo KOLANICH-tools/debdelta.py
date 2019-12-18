@@ -1477,10 +1477,12 @@ def forensics_rfc(o,db,bytar,controlfiles,files,conffiles,diverted=[],diversions
   assert type(diversions) == dict
   if type(db) == dict:
     for a in sorted(db.keys()):
+      assert isinstance(a,str)
       if a[:3] == 'OLD':
         o.write(a[4:]+': '+db[a]+'\n')    
   else:
     for a in sorted(db):
+      assert isinstance(a,str)
       if a[:3] == 'OLD':
         o.write(a[4:]+'\n')
   if diverted:
