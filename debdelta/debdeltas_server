@@ -1053,7 +1053,7 @@ def start_gpg_agent():
         return False
     try:
         version=version.split('\n')[0].split()[-1]
-        version=map(int,version.split('.'))
+        version=list(map(int,version.split('.')))
     except:
         logger.error('cannot parse gpg-agent version '+repr(version))
     has_env='--write-env-file' in agenthelp
