@@ -1123,7 +1123,7 @@ def start_gpg_agent_environ():
 
 def test_gpg_signing():
     n=tempfile.NamedTemporaryFile(delete=False)
-    n.write('pippo\n')
+    n.write(b'pippo\n')
     n.close()
     e=tempfile.NamedTemporaryFile(delete=False)
     p=subprocess.Popen(['gpg', '--quiet', '--batch', '--homedir', gnupg_home,\
