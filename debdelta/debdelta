@@ -1799,7 +1799,7 @@ def do_patch_(delta, olddeb, newdeb, TD, runtime,
       dpkg_params={}
       b=params['OLD/Package']
       if os.path.isdir(olddeb):
-        p=my_popen_read(['env', '-i', 'dpkg', '-s',b])
+        p=my_popen_read(['env', '-i', 'dpkg', '-s',b], **Popen_args)
       else:        
         p=open(TD+'OLD/CONTROL/control')
       scan_control(p,params=dpkg_params,prefix='OLD')
