@@ -962,7 +962,10 @@ class Publisher(object):
 def update_popcon():
     " prepare a cache in popcon_cache, a pickle of a dict where keys are names of packages, and values\
     are popularity, normalized so that maximum popularity is 1.0 "
-    import cPickle as pickle
+    if sys.version_info.major == 2:
+        import cPickle as pickle
+    else:
+        import pickle
     popcon_dict={}
     maximum=None
     for a in my_subprocess_Popen(popcon_update_command, shell=True,
