@@ -4696,6 +4696,9 @@ def delta_upgrade_(args):
       if VERBOSE > 1 : logger.info('  Patching thread started. ')
       debs_size=0
       debs_time=0
+      # in case of early exception
+      returns['debs_size']=debs_size
+      returns['debs_time']=debs_time
       while 1:
         a = que.get()
         if a == None:
