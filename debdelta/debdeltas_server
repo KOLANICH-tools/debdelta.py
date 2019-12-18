@@ -65,8 +65,10 @@ else:
 
 if sys.version_info.major == 2:
     string_types = (str, unicode)  # python2
+    Popen_as_text = {}
 else:
     string_types = (str, bytes)  # python3
+    Popen_as_text = {'text':True}
 
 if len(sys.argv) <= 2:
     sys.stderr.write(__doc__)
@@ -142,7 +144,8 @@ def send_temp_out_as_mail(out):
     if os.path.getsize(out.name) > 0:
         if logger: logger.debug('there was output, sending email')
         if email:
-            p=subprocess.Popen(['mail','-s',repr(args), email], stdin=open(out.name))
+            p=subprocess.Popen(['mail','-s',repr(args), email], stdin=open(out.name),
+                               ** Popen_as_text)
             p.wait()
             if p.returncode:
                 if logger: logger.warn('email failed, file is %r ', out.name)
@@ -452,7 +455,8 @@ def _backup_Packages(now, where):
                 if os.path.isfile(b+'.gpg'):
                     shutil.copy2( b+'.gpg', join(where,m,'dists',d,'Release.gpg') )
                     #check signature. TODO currently if signature fails there is no consequence
-                    p=my_subprocess_Popen(['gpgv','-q', b+'.gpg',b ], stdout = subprocess.PIPE, stderr=subprocess.STDOUT)
+                    p=my_subprocess_Popen(['gpgv','-q', b+'.gpg',b ], stdout = subprocess.PIPE,
+                                          stderr=subprocess.STDOUT, **Popen_as_text)
                     e=p.stdout.read()
                     p.wait()
                     if p.returncode:
@@ -839,7 +843,7 @@ def _worker_creates_deltas(exit_when_queue_empty=False):
 
 def move_from_transit_to_server():
     p=subprocess.Popen(['find','-type','f', '-not', '-name', '*_tmp_'],
-                       cwd=deltas_transit_dir,stdout=subprocess.PIPE)
+                       cwd=deltas_transit_dir,stdout=subprocess.PIPE, **Popen_as_text)
     moved=[]
     ndequeud=0
     for j in p.stdout:
@@ -924,7 +928,7 @@ class Publisher(object):
             args=[self.publisher, config_abspath]
             self.args=args
             self.created=created
-            p=my_subprocess_Popen(args+created)
+            p=my_subprocess_Popen(args+created, **Popen_as_text)
             self.proc=p
             self.returncode=None
             return p
@@ -961,7 +965,8 @@ def update_popcon():
     import cPickle as pickle
     popcon_dict={}
     maximum=None
-    for a in my_subprocess_Popen(popcon_update_command, shell=True, stdout=subprocess.PIPE).stdout:
+    for a in my_subprocess_Popen(popcon_update_command, shell=True,
+                                 stdout=subprocess.PIPE, **Popen_as_text).stdout:
         if not a or a[0] == '#':
             continue
         b=[c for c in string.split(a) if c]
@@ -1019,7 +1024,8 @@ def daemonize_maybe_mail(cmdname, cmd, *args, **kw):
         out.close()# <- warning from here on, output to stdout and stderr are lost
         if os.path.getsize(out.name) > 0:
             logger.debug('there was output, sending email')
-            p=my_subprocess_Popen(['mail','-s',cmdname,email], stdin=subprocess.PIPE)
+            p=my_subprocess_Popen(['mail','-s',cmdname,email], stdin=subprocess.PIPE,
+                                  ** Popen_as_text)
             o=open(out.name)
             for a in o: 
                 p.stdin.write(a)
@@ -1060,7 +1066,8 @@ def start_gpg_agent():
 
 def start_gpg_agent_noenviron():
     p=subprocess.Popen(['gpg-connect-agent','--homedir', gnupg_home,'--no-autostart'],
-                       stdin=subprocess.PIPE,stdout=subprocess.PIPE)
+                       stdin=subprocess.PIPE,stdout=subprocess.PIPE,
+                       **Popen_as_text)
     magik='3PlOBJK'
     try:
         p.stdin.write('/echo '+magik)
