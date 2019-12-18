@@ -4566,12 +4566,14 @@ def delta_upgrade_(args):
     
   try:
     import requests
+    requests_session = requests.Session()
   except ImportError:
     if (sys.version_info.major == 2):
       logger.info('You may want to install `requests`\n# sudo apt install python-requests\n')
     else:
       logger.warning('You should install `requests`\n# sudo apt install python3-requests\n')
     requests=None
+    requests_session=None
 
   if VERBOSE and proxies:
     #note that this message is indented, I dont know what's best in translations
@@ -4822,7 +4824,7 @@ def delta_upgrade_(args):
         a[2]=urlquote(uri_p[2])
         uri=urlunparse(a)
         try:
-          req = requests.get(uri, headers=headers, stream = True)
+          req = requests_session.get(uri, headers=headers, stream = True)
           req.read = req.raw.read
           return req, req.raw.status, req.raw.msg, req.raw.info()
         except requests.exceptions.ConnectionError:
