@@ -1925,8 +1925,8 @@ def do_patch_(delta, olddeb, newdeb, TD, runtime,
             elif VERBOSE > 4 : logger.debug('     (prelink failed, but file was copied)')
             thestat = os.statvfs(tmpcopy)
             if out[-39:] == 'does not have .gnu.prelink_undo section':
-              if DEBUG:
-                logger.debug('  '+repr(out)+'\n')
+              if DEBUG > 1:
+                logger.debug('  '+repr(out))
             elif (thestat.f_bsize * thestat.f_bavail / 1024) < 50000 : 
               logger.warning('!!Prelink -u failed, it needs at least 50000KB of free disk space\n')
               prelink_u_failed.append(de_bar(orig))
