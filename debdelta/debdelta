@@ -169,6 +169,7 @@ if sys.version_info.major == 2:
                    (sys.getfilesystemencoding(),))  
 else:
   string_types = (str, bytes)  # python3
+  intern = sys.intern
   # flags for subprocess.Popen to open stdin,stdout as text streams
   Popen_args = {'text':True}
   #
