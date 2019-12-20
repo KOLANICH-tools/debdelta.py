@@ -620,13 +620,14 @@ class cache_sequence(object):
     self.broken=None
     self.exists=os.path.isfile(self.cache_filename) and \
       os.path.getmtime(filename) < os.path.getmtime(self.cache_filename)
+    self.next = self.__next__
   
   def __iter__(self):
     assert self.exists and not self.cache
     self.cache=gzip.GzipFile(self.cache_filename)
     return self
   
-  def next(self):
+  def __next__(self):
     assert self.cache
     try:
       return pickle.load(self.cache)
@@ -686,7 +687,7 @@ class cache_same_dict(cache_sequence):
     n=[s[k] for k in self.keys]
     super(cache_same_dict, self).write(n)
   
-  def next(self):
+  def __next__(self):
     n=next(super(cache_same_dict, self))
     return dict(map(lambda x,y: (x,y) , self.keys, n)) # dict comprehension may be used instead
 
