@@ -38,7 +38,7 @@ debdelta (0.58exp) experimental; urgency=medium
   * Bug fix: "[INTL:pt] Updated Portuguese translation for program",
     thanks to Miguel Figueiredo (Closes: #852087).
   * Installation leaves gpg-agent process running
-    Thanks Andreas Beckmann (Closes: #85135).
+    Thanks Andreas Beckmann (Closes: #852135).
   * Various code fixes.
   * Lintian fixes:
     - rewrite copyright using  copyright-format/1.0/
