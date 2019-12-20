@@ -19,9 +19,10 @@ PO_FILES := $(wildcard po/*.po)
 MO_FILES := $(patsubst %.po,%.mo,$(PO_FILES))
 LANGS := $(patsubst po/%.po,%,$(PO_FILES))
 
-CC = gcc
-
-INSTALL_PROGRAM = install
+include /usr/share/dpkg/architecture.mk
+-include /usr/share/dpkg/buildtools.mk
+STRIP = $(DEB_HOST_GNU_TYPE)-strip
+INSTALL_PROGRAM = install --strip-program=$(STRIP)
 
 CPPFLAGS:=$(shell dpkg-buildflags --get CPPFLAGS)
 CFLAGS:=$(shell dpkg-buildflags --get CFLAGS)
