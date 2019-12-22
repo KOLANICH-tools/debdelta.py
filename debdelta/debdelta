@@ -622,7 +622,7 @@ class cache_sequence(object):
     self.cache=None
     self.broken=None
     self.exists=os.path.isfile(self.cache_filename) and \
-      os.path.getmtime(filename) < os.path.getmtime(self.cache_filename)
+      os.path.getmtime(filename) <= os.path.getmtime(self.cache_filename)
 
   def __iter__(self):
     assert self.exists and not self.cache
