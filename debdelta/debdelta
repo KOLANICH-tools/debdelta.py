@@ -623,8 +623,7 @@ class cache_sequence(object):
     self.broken=None
     self.exists=os.path.isfile(self.cache_filename) and \
       os.path.getmtime(filename) < os.path.getmtime(self.cache_filename)
-    self.next = self.__next__
-  
+
   def __iter__(self):
     assert self.exists and not self.cache
     self.cache=gzip.GzipFile(self.cache_filename)
@@ -644,7 +643,10 @@ class cache_sequence(object):
       self.broken=True
       # do not kill program
       raise StopIteration
-  
+
+  def next(self):
+    return self.__next__()
+
   def __prepare_for_write__(self):
     if not self.cache:
       if DEBUG: logger.debug('Creating cache file : %r', self.cache_filename)
@@ -691,7 +693,7 @@ class cache_same_dict(cache_sequence):
     super(cache_same_dict, self).write(n)
   
   def __next__(self):
-    n=next(super(cache_same_dict, self))
+    n=(super(cache_same_dict, self)).__next__()
     return dict(map(lambda x,y: (x,y) , self.keys, n)) # dict comprehension may be used instead
 
 #####################################################################
