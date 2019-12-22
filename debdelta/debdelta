@@ -158,6 +158,7 @@ if sys.version_info.major == 2:
   Popen_args = {}
   #
   from ConfigParser import SafeConfigParser as ConfigParser
+  from tarfile import filemode as stat_filemode
   #
   def str2bytes(a):
     return a
@@ -174,6 +175,7 @@ else:
   Popen_args = {'text':True}
   #
   from configparser import ConfigParser
+  from stat import filemode as stat_filemode
   #
   long = int
   def str2bytes(a):
@@ -1459,7 +1461,7 @@ def tarinfo_to_ls(tartype,tarmode):
             a="-hlcbdp"[ord(tartype) - ord('0')] 
         else:
             a='?'
-    return a+stat.filemode(tarmode)[1:]
+    return a + stat_filemode(tarmode)[1:]
 
 
 def sha1_hash_file(f):
