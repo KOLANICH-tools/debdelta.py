@@ -3,7 +3,7 @@ Section: devel
 Priority: optional
 Build-Depends: zlib1g-dev, libbz2-dev
 Maintainer: A Mennucc1 <mennucc1@debian.org>
-Standards-Version: 3.9.8
+Standards-Version: 4.4.1
 Homepage: http://debdelta.debian.net
 Vcs-git: https://salsa.debian.org/mennucc1/debdelta.git
 

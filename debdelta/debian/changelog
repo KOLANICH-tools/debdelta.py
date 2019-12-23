@@ -2,6 +2,7 @@ debdelta (0.65) UNRELEASED; urgency=medium
 
   * Switch to dpkg-source 3.0 (native) format
   * debian/rules : use `cp -p` and `chmod`
+  * bump standards version to 4.4.1
 
  --
 
