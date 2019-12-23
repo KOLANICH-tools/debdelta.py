@@ -1,10 +1,10 @@
-debdelta (0.65) UNRELEASED; urgency=medium
+debdelta (0.65) unstable; urgency=medium
 
   * Switch to dpkg-source 3.0 (native) format
   * debian/rules : use `cp -p` and `chmod`
   * bump standards version to 4.4.1
 
- --
+ -- A Mennucc1 <mennucc1@debian.org>  Mon, 23 Dec 2019 17:56:32 +0100
 
 debdelta (0.64) unstable; urgency=medium
 
