@@ -57,9 +57,10 @@ binary-indep:	checkroot build
 	$(checkdir)
 	rm -rf $(D2)
 	install -d $(D2)/DEBIAN  $(docdir2)  $(docdir2doc)
-	cp doc/debdelta_suite.pdf debian/copyright debian/changelog $(docdir2doc)
+	cp -p doc/debdelta_suite.pdf debian/copyright debian/changelog $(docdir2doc)
+	chmod -c 0644 $(docdir2doc)/*
 	cd $(docdir2doc) && gzip -9n changelog
-	cp -r doc/html  $(docdir2doc)
+	cp -rp doc/html  $(docdir2doc)
 	ln -s ../debdelta-doc/debdelta_suite.pdf  $(docdir2)
 	ln -s ../debdelta-doc/html  $(docdir2)
 	# build package
@@ -79,22 +80,23 @@ binary-arch:	checkroot build
 	install -m 755 debian/postrm $(D)/DEBIAN/
 	install -m 755 debian/postinst $(D)/DEBIAN/
 	# /usr/share
-	set -e ; for L in $(LANGS) ; do 	cp po/$${L}.mo $(D)/usr/share/locale/$${L}/LC_MESSAGES/debdelta.mo ; done
+	set -e ; for L in $(LANGS) ; do cp -p po/$${L}.mo $(D)/usr/share/locale/$${L}/LC_MESSAGES/debdelta.mo ; chmod -c 0644 $(D)/usr/share/locale/$${L}/LC_MESSAGES/debdelta.mo ; done
 	install debpatch.sh $(D)/usr/share/debdelta
 	install contrib/debmirror-delta-security $(D)/usr/share/debdelta/
 	install contrib/debmirror-marshal-deltas $(D)/usr/share/debdelta/
 	install contrib/debmarshal_list_useless_debs $(D)/usr/share/debdelta/
 	install contrib/dpkg-sig $(D)/usr/share/debdelta
-	cp contrib/debmirror*trash_option.patch  $(D)/usr/share/debdelta
+	cp -p contrib/debmirror*trash_option.patch  $(D)/usr/share/debdelta
 	ln -s ../../bin/debdelta  $(D)/usr/share/debdelta/debpatch-url
-	cp keyrings/pubring.gpg $(D)/usr/share/keyrings/debian-debdelta-archive-keyring.gpg
-	chmod 0644 $(D)/usr/share/keyrings/debian-debdelta-archive-keyring.gpg
+	cp -p keyrings/pubring.gpg $(D)/usr/share/keyrings/debian-debdelta-archive-keyring.gpg
+	chmod 0644 -c $(D)/usr/share/keyrings/debian-debdelta-archive-keyring.gpg
 	# /usr/lib
 	$(INSTALL_PROGRAM)  minigzip $(D)/usr/lib/debdelta/minigzip
 	$(INSTALL_PROGRAM)  minibzip2 $(D)/usr/lib/debdelta/minibzip2
 	# /etc
 	install -d $(D)/etc/debdelta
-	cp etc/sources.conf $(D)/etc/debdelta/sources.conf
+	cp -p etc/sources.conf $(D)/etc/debdelta/sources.conf
+	chmod -c 0644  $(D)/etc/debdelta/sources.conf
 	echo /etc/debdelta/sources.conf >> $(D)/DEBIAN/conffiles
 	# /usr/bin
 	install debdelta $(D)/usr/bin/debdelta
@@ -102,10 +104,12 @@ binary-arch:	checkroot build
 	ln -s debdelta  $(D)/usr/bin/debdeltas
 	ln -s debdelta  $(D)/usr/bin/debdelta-upgrade
 	# /usr/share/doc
-	cp FAQ README.features debian/copyright debian/changelog $(docdir)
+	cp -p FAQ README.features debian/copyright debian/changelog $(docdir)
+	chmod -c 0644 $(docdir)/*
 	cd $(docdir) && gzip -9n changelog FAQ
 	# man
-	cp *.1 $(mandir)
+	cp -p *.1 $(mandir)
+	chmod -c 0644 $(mandir)*.1
 	gzip -9n $(mandir)/*.1 
 	# build package
 	dpkg-shlibdeps $(D)/usr/lib/debdelta/minigzip  $(D)/usr/lib/debdelta/minibzip2
