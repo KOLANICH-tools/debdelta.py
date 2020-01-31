@@ -130,8 +130,9 @@ daemon_context=None
 if DO_DAEMON:
     daemon_context=daemon.DaemonContext(umask=0o022)
     daemon_context.open()
+    # FIXME these are logged nowhere
     logger.info('Running as PID %d',os.getpid())
-
+    logger.info('Running on Python: %r',sys.version)
 
 ### redirect stdin and stderr
 
