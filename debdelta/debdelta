@@ -164,6 +164,8 @@ if sys.version_info.major == 2:
     return a
   def bytes2str(b):
     return b
+  def is_bytes(b):
+    return False
   # see https://docs.python.org/2/library/tarfile.html#unicode-issues
   if sys.getfilesystemencoding() != 'UTF-8':
     logger.warning('The filesystem encoding is %r, but this program assumes `UTF-8`.'%\
@@ -182,6 +184,8 @@ else:
     return a.encode('UTF-8',errors='surrogateescape')
   def bytes2str(b):
     return b.decode('UTF-8',errors='surrogateescape')
+  def is_bytes(b):
+    return isinstance(b,bytes)
   # see https://docs.python.org/3/library/tarfile.html#unicode-issues
   if sys.getfilesystemencoding() != 'utf-8':
     logger.warning('The filesystem encoding is %r, but this program assumes `utf-8`.'%\
