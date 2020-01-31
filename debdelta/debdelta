@@ -3918,6 +3918,7 @@ def iterate_Packages(packages, use_debian_822=True):
     #
     of,pack,vers,arch=None,None,None,None
     for l in F:
+      l = bytes2str(l)
       l=l.rstrip('\n')
       if l[:9] == 'Package: ':
           pack=l[9:]
