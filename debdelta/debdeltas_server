@@ -626,7 +626,7 @@ class Compute_Priority(object):
         self.warned=[]
         self.popcon_dict={}
         if  os.path.isfile(popcon_cache):
-            self.popcon_dict=pickle.load(open(popcon_cache))
+            self.popcon_dict=pickle.load(open(popcon_cache,'rb'))
         else:
             logger.warn(' popcon_cache is unavailable ')
             
@@ -723,7 +723,7 @@ def worker_creates_deltas(exit_when_queue_empty=False):
     if r != 0: return
     with lockfile.FileLock(worker_creates_deltas_lockname, timeout=lock_timeout) as L:
         logger.debug('start , EQE=%r' % exit_when_queue_empty)
-        open(L.path,'w').write(pickle.dumps({'exit_when_queue_empty':exit_when_queue_empty,'pid':os.getpid()}))
+        open(L.path,'wb').write(pickle.dumps({'exit_when_queue_empty':exit_when_queue_empty,'pid':os.getpid()}))
         _worker_creates_deltas(exit_when_queue_empty=exit_when_queue_empty)
         logger.debug('end')
         if os.path.exists(L.path): os.unlink(L.path)
@@ -986,7 +986,7 @@ def update_popcon():
     if  popcon_dict:
         #if there was a network error, avoid overwriting
         logger.info('parsed popcon file, %d relevant entries' % len(popcon_dict))
-        pickle.dump(popcon_dict, open(popcon_cache+'~~','w'))
+        pickle.dump(popcon_dict, open(popcon_cache+'~~','wb'))
         os.rename(popcon_cache+'~~',popcon_cache)
     else:
         logger.error('failed to download or parse file')
