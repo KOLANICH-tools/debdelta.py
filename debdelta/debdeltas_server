@@ -31,7 +31,7 @@ Possible commands:
  publish                       update html stats, move stuff from transit to server
 """
 
-#Copyright (c) 2013 A. Mennucci
+#Copyright (c) 2013-2020 A. Mennucci
 #License: GNU GPL v2 
 
 
