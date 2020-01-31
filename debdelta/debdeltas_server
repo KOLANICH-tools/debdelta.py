@@ -410,7 +410,7 @@ class Release_as_dict(object):
             if not self.rele:
                 logger.warn('Could not extract hashes %r from %r ', thehash, a)
         else:
-            if a: logger.warn('file not found:'+repr(a))
+            if a: logger.warning('file not found:'+repr(a))
             self.rele={}
             self.filename=None
     def __len__(self): # used for truth value
@@ -441,8 +441,8 @@ def _backup_Packages(now, where):
     
     NewRelease={}
     OldRelease={}
-    if debian_deb822 == None:
-        logger.warn(" please install package 'python-debian' ")
+    if debian_deb822 is None:
+        logger.warning(" please install package 'python3-debian' ")
     for m in distrib:
             for d in distrib[m]:
                 # read and copy Release file
