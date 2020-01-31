@@ -1046,8 +1046,10 @@ def daemonize_maybe_mail(cmdname, cmd, *args, **kw):
 def start_gpg_agent():
     # https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=796931
     try:
-        version=subprocess.check_output(['gpg-agent','--homedir', gnupg_home,'--version'])
-        agenthelp=subprocess.check_output(['gpg-agent','--homedir', gnupg_home,'--help'])
+        version=subprocess.check_output(['gpg-agent','--homedir', gnupg_home,'--version'],
+                                        **Popen_as_text)
+        agenthelp=subprocess.check_output(['gpg-agent','--homedir', gnupg_home,'--help'],
+                                          **Popen_as_text)
     except subprocess.CalledProcessError:
         logger.error('Cannot run gpg-agent --version or --help')
         return False
