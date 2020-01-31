@@ -401,7 +401,9 @@ def backup_Packages():
 class Release_as_dict(object):
     def __init__(self, a, thehash):
         self.thehash = thehash # hash used to deduplicate
-        if debian_deb822 != None and a and os.path.isfile(a):
+        if debian_deb822 is None:
+            logger.error('this function needs module debian.deb822 from package `python3-debian`')
+        elif a and os.path.isfile(a):
             self.rele= { z['name'] : z[self.thehash] \
                         for z in debian_deb822.Release(open(a))[thehash] }
             self.filename=a
