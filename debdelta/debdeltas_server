@@ -972,7 +972,7 @@ def update_popcon():
                                  stdout=subprocess.PIPE, **Popen_as_text).stdout:
         if not a or a[0] == '#':
             continue
-        b=[c for c in string.split(a) if c]
+        b=[c for c in a.split() if c]
         if len(b)<2 or b[1]=='Total':
             continue
         p,v=b[1],b[2]
