@@ -3851,7 +3851,7 @@ def iterate_Packages(packages, use_debian_822=True):
             of=l[10:]
       elif l == '':
         if of == None or pack == None or vers == None or arch == None:
-          logger.warning('Warning, skipping incomplete record in index: %r %r %r',of,pack,vers,arch)
+          logger.warning('Warning, skipping incomplete record in index: %r %r %r %r',of,pack,vers,arch)
           continue
         if of[-4:] == '.udeb':
           if VERBOSE > 2 : logger.debug('   skip udeb')
