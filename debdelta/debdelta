@@ -466,6 +466,80 @@ else:
   def rmtree(a):
     return __wrap__(a,shutil.rmtree)
 
+################################################################## check debian.deb822
+
+_fake_Packages="""Package: coreutils
+Version: 8.30-3
+Essential: yes
+Installed-Size: 15719
+Maintainer: Michael Stone <mstone@debian.org>
+Architecture: amd64
+Pre-Depends: libacl1 (>= 2.2.23), libattr1 (>= 1:2.4.44), libc6 (>= 2.28), libselinux1 (>= 2.1.13)
+Description: GNU core utilities
+Multi-Arch: foreign
+Homepage: http://gnu.org/software/coreutils
+Description-md5: d0d975dec3625409d24be1238cede238
+Tag: admin::configuring, implemented-in::c, interface::commandline,
+  role::program, scope::utility, suite::gnu, works-with::file
+Section: utils
+Priority: required
+Filename: pool/main/c/coreutils/coreutils_8.30-3_amd64.deb
+Size: 2707932
+MD5sum: 4a658a39c2810530df6642d22f65ddd1
+SHA256: ae6e5cd6e9aaf74d66edded3931a7a6c916625b8b890379189c75574f6856bf4
+
+Package: bash
+Version: 5.0-4
+Essential: yes
+Installed-Size: 6439
+Maintainer: Matthias Klose <doko@debian.org>
+Architecture: amd64
+Replaces: bash-completion (<< 20060301-0), bash-doc (<= 2.05-1)
+Depends: base-files (>= 2.1.12), debianutils (>= 2.15)
+Pre-Depends: libc6 (>= 2.15), libtinfo6 (>= 6)
+Recommends: bash-completion (>= 20060301-0)
+Suggests: bash-doc
+Conflicts: bash-completion (<< 20060301-0)
+Description: GNU Bourne Again SHell
+Multi-Arch: foreign
+Homepage: http://tiswww.case.edu/php/chet/bash/bashtop.html
+Description-md5: 3522aa7b4374048d6450e348a5bb45d9
+Tag: admin::TODO, devel::TODO, devel::interpreter, implemented-in::c,
+ interface::shell, interface::text-mode, role::program,
+ scope::application, suite::gnu, uitoolkit::ncurses
+Section: shells
+Priority: required
+Filename: pool/main/b/bash/bash_5.0-4_amd64.deb
+Size: 1377592
+MD5sum: 6f118d96e29a5208da9033bf0b2c772c
+SHA256: d07f3528c615545bb182269362926bc171adab565dade3e8c35cb3bae8ad9e5e
+
+"""
+
+def test_deb822(debian_deb822, shared_storage):
+  F = tempfile.NamedTemporaryFile()
+  open(F.name,'w').write(_fake_Packages)
+  I=debian_deb822.Packages.iter_paragraphs(sequence=open(F.name,'rb'),shared_storage=shared_storage)
+  c=next(I)
+  assert c['Package'] == 'coreutils'
+  assert c['Size'] == '2707932'
+  b=next(I)
+  assert b['Package'] == 'bash'
+  assert c['Size'] == '2707932'
+  b['foo']='bar'
+  c['foo']='tock'
+  assert b['foo']=='bar'
+  # Deb822 only accepts strings
+  #b['foo']=(1,None)
+
+  
+if debian_deb822 is not None:
+  try:
+    test_deb822(debian_deb822,False)
+    test_deb822(debian_deb822,True)
+  except:
+    logger.exception("While testing debian.822")
+
 #################################################### various routines
 
 def my_popen_read(cmd, ** args):
