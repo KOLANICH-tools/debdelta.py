@@ -1189,7 +1189,7 @@ elif args[0] in ('backup,queue,worker', 'backup_then_scan_and_queue_deltas'):
     D={}
     if L.is_locked():
         try:
-            D=pickle.load(open(L.path))
+            D=pickle.load(open(L.path,'rb'))
         except:
             logger.exception(' while reading lock info %r',L.path)
         if D.get('exit_when_queue_empty'):
