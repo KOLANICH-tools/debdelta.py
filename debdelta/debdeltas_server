@@ -1192,7 +1192,10 @@ elif args[0] in ('backup,queue,worker', 'backup_then_scan_and_queue_deltas'):
             D=pickle.load(open(L.path,'rb'))
         except:
             logger.exception(' while reading lock info %r',L.path)
-        if D.get('exit_when_queue_empty'):
+        if not D:
+            logger.warning('File %r is corrupt; breaking lock.',L.path)
+            L.break_lock()
+        if D.get('exit_when_queue_empty', True):
             #after this time, either it has exited, or it has noted that other deltas have been queued
             time.sleep(120)
         else:
