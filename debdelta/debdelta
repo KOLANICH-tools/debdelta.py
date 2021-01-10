@@ -5468,9 +5468,9 @@ def delta_upgrade_(args):
   #do something useful in the meantime
   debs_down_size=0
   debs_down_time=0
-  if patching_thread.isAlive() and no_delta and VERBOSE > 1 :
+  if patching_thread.is_alive() and no_delta and VERBOSE > 1 :
     logger.info('  Downloading deltas done, downloading debs while waiting for patching thread.')
-  while patching_thread.isAlive() or ('a' in DEB_POLICY and no_delta):
+  while patching_thread.is_alive() or ('a' in DEB_POLICY and no_delta):
     if no_delta:
       uri, newdeb  = no_delta.pop()
       thread_returns['downloaduri']=os.path.basename(uri)
@@ -5489,12 +5489,12 @@ def delta_upgrade_(args):
     if http_conns[i] != None :
       http_conns[i].close()
   
-  while patching_thread.isAlive():
+  while patching_thread.is_alive():
     time.sleep(0.1)
 
   #terminate progress report
   thread_returns['STOP']=True
-  while progress_thread != None and progress_thread.isAlive():
+  while progress_thread != None and progress_thread.is_alive():
     time.sleep(0.1)
   
   if DO_PROGRESS:

@@ -1,3 +1,11 @@
+debdelta (0.65+nmu1) unstable; urgency=high
+
+  * Non-maintainer upload.
+  * Fix "DeprecationWarning: isAlive() is deprecated, use is_alive()
+    instead" (Closes: #962203, #954420)
+
+ -- Calum McConnell <calumlikesapplepie@gmail.com>  Fri, 01 Jan 2021 17:15:42 -0500
+
 debdelta (0.65) unstable; urgency=medium
 
   * Switch to dpkg-source 3.0 (native) format
