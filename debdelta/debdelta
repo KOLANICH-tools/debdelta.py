@@ -2946,19 +2946,23 @@ def do_delta_(olddeb, newdeb, delta, TD, forensic_file=None, info=[]):
     myord = ord if sys.version_info.major == 2 else (lambda x:x)
     if na[:3] != b'\037\213\010' :
       logger.warning(' Warning: was not created with gzip: %r',n)
-      nf.close() ; of.close() 
+      nf.close() ; of.close()
       return 0
     if oa[:3] != b'\037\213\010' :
       logger.warning(' Warning: was not created with gzip: %r',o)
-      nf.close() ; of.close() 
+      nf.close() ; of.close()
       return 0
     oflag=myord(oa[3])
     if oflag & 0xf7:
       logger.warning(' Warning: unsupported  .gz flags: %r %r',oct(oflag),o)
     if oflag & 8 : #skip orig name
       oa=of.read(1)
-      while myord(oa) != 0:
+      while oa and myord(oa) != 0:
         oa=of.read(1)
+      if not oa:
+        logger.warning(' Warning: premature EOF: %r',o)
+        nf.close() ; of.close()
+        return 0
     l=10
     nflag=myord(na[3])
     if nflag & 0xf7:
@@ -2966,9 +2970,13 @@ def do_delta_(olddeb, newdeb, delta, TD, forensic_file=None, info=[]):
     if nflag & 8 : #skip orig name
       na=nf.read(1)
       #s=na
-      while myord(na) != 0:
+      while na and myord(na) != 0:
         na=nf.read(1)
         #s+=na
+      if not na:
+        logger.warning(' Warning: premature EOF: %r',n)
+        nf.close() ; of.close() 
+        return 0
       l+=len(s)
       #print repr(s)
     while oa and na:
